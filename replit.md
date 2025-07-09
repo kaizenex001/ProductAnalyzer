@@ -52,7 +52,7 @@ Preferred communication style: Simple, everyday language.
 - **PDF Generation**: Export reports as PDF documents with download functionality across all pages
 
 ### UI Components
-- **Navigation**: Persistent header with route-based active states and theme toggle
+- **Navigation**: Responsive header with route-based active states, theme toggle, and icon-only mode on mobile
 - **Theme System**: Complete dark/light mode implementation with CSS custom properties
 - **Forms**: Validated forms with error handling and loading states
 - **Modals**: Overlays for detailed report viewing
