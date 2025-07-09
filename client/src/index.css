@@ -232,4 +232,74 @@
   .dark .bg-slate-100 .text-gray-600 {
     color: hsl(216, 28%, 30%) !important;
   }
+
+  /* More aggressive overrides for all text elements on light backgrounds */
+  .dark .bg-gray-50 *:not(.bg-*),
+  .dark .bg-gray-100 *:not(.bg-*),
+  .dark .bg-slate-50 *:not(.bg-*),
+  .dark .bg-slate-100 *:not(.bg-*) {
+    color: hsl(216, 28%, 20%) !important;
+  }
+
+  /* Specific overrides for muted text colors */
+  .dark .bg-gray-50 .text-muted-foreground,
+  .dark .bg-gray-100 .text-muted-foreground,
+  .dark .bg-slate-50 .text-muted-foreground,
+  .dark .bg-slate-100 .text-muted-foreground {
+    color: hsl(216, 28%, 25%) !important;
+  }
+
+  /* Override any remaining light text classes */
+  .dark .bg-gray-50 [class*="text-"],
+  .dark .bg-gray-100 [class*="text-"],
+  .dark .bg-slate-50 [class*="text-"],
+  .dark .bg-slate-100 [class*="text-"] {
+    color: hsl(216, 28%, 20%) !important;
+  }
+
+  /* Force dark text on any light background containers */
+  .dark [class*="bg-gray-5"] *,
+  .dark [class*="bg-gray-10"] *,
+  .dark [class*="bg-slate-5"] *,
+  .dark [class*="bg-slate-10"] *,
+  .dark [class*="bg-white"] * {
+    color: hsl(216, 28%, 15%) !important;
+  }
+
+  /* Ultimate override for report modal content */
+  .dark .bg-gray-50,
+  .dark .bg-gray-100,
+  .dark .bg-slate-50,
+  .dark .bg-slate-100 {
+    color: hsl(216, 28%, 15%) !important;
+  }
+
+  /* Ensure all text elements inherit dark color */
+  .dark .bg-gray-50 *,
+  .dark .bg-gray-100 *,
+  .dark .bg-slate-50 *,
+  .dark .bg-slate-100 * {
+    color: inherit !important;
+  }
+
+  /* Reset any CSS custom properties that might be causing light text */
+  .dark .bg-gray-50 {
+    --tw-text-opacity: 1 !important;
+    color: hsl(216, 28%, 15%) !important;
+  }
+
+  .dark .bg-gray-100 {
+    --tw-text-opacity: 1 !important;
+    color: hsl(216, 28%, 15%) !important;
+  }
+
+  .dark .bg-slate-50 {
+    --tw-text-opacity: 1 !important;
+    color: hsl(216, 28%, 15%) !important;
+  }
+
+  .dark .bg-slate-100 {
+    --tw-text-opacity: 1 !important;
+    color: hsl(216, 28%, 15%) !important;
+  }
 }
