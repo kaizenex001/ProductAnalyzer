@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Trash2, Plus, FolderOpen } from "lucide-react";
+import { Trash2, Plus, FolderOpen, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
@@ -41,6 +41,16 @@ export default function Reports() {
   const handleDeleteReport = (reportId: number, e: React.MouseEvent) => {
     e.stopPropagation();
     deleteReportMutation.mutate(reportId);
+  };
+
+  const handleDownloadPDF = (reportId: number, productName: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const link = document.createElement('a');
+    link.href = `/api/reports/${reportId}/pdf`;
+    link.download = `${productName}-analysis.pdf`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   if (isLoading) {
@@ -106,15 +116,27 @@ export default function Reports() {
                       <span className="text-slate-500">No image</span>
                     </div>
                   )}
-                  <Button
-                    size="sm"
-                    variant="destructive"
-                    className="absolute top-3 right-3 w-8 h-8 p-0"
-                    onClick={(e) => handleDeleteReport(report.id, e)}
-                    disabled={deleteReportMutation.isPending}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
+                  <div className="absolute top-3 right-3 flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      className="w-8 h-8 p-0 bg-white/90 hover:bg-white"
+                      onClick={(e) => handleDownloadPDF(report.id, report.productName, e)}
+                      title="Download PDF"
+                    >
+                      <Download className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      className="w-8 h-8 p-0"
+                      onClick={(e) => handleDeleteReport(report.id, e)}
+                      disabled={deleteReportMutation.isPending}
+                      title="Delete Report"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </div>
                 <CardContent className="p-6">
                   <h3 className="text-lg font-semibold text-slate-900 mb-1">

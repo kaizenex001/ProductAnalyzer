@@ -43,6 +43,10 @@ export default function ReportModal({ reportId, isOpen, onClose }: ReportModalPr
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden">
+          <DialogHeader>
+            <DialogTitle>Loading Report</DialogTitle>
+            <DialogDescription>Please wait while we load your analysis report.</DialogDescription>
+          </DialogHeader>
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
@@ -58,6 +62,10 @@ export default function ReportModal({ reportId, isOpen, onClose }: ReportModalPr
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden">
+          <DialogHeader>
+            <DialogTitle>Report Not Found</DialogTitle>
+            <DialogDescription>The requested analysis report could not be found.</DialogDescription>
+          </DialogHeader>
           <div className="flex items-center justify-center h-64">
             <p className="text-slate-600">Report not found</p>
           </div>

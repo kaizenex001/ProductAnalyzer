@@ -63,10 +63,41 @@ export default function AnalysisPanel({ analysis, productData, onAnalysisChange 
 
   const downloadPDFMutation = useMutation({
     mutationFn: async () => {
-      // For now, just show a toast. In a real implementation, you'd generate and download a PDF
+      if (!analysis || !productData) throw new Error("No analysis or product data");
+      
+      // First save the report to get an ID, then download PDF
+      const saveResponse = await apiRequest("POST", "/api/reports", {
+        productData,
+        analysis
+      });
+      const report = await saveResponse.json();
+      
+      // Download PDF
+      const response = await fetch(`/api/reports/${report.id}/pdf`);
+      if (!response.ok) throw new Error("Failed to download PDF");
+      
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${productData.productName}-analysis.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/reports"] });
       toast({
-        title: "PDF Download",
-        description: "PDF download functionality would be implemented here.",
+        title: "Success",
+        description: "PDF downloaded successfully!",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to download PDF. Please try again.",
+        variant: "destructive",
       });
     },
   });
@@ -183,10 +214,10 @@ export default function AnalysisPanel({ analysis, productData, onAnalysisChange 
             <Button
               variant="secondary"
               onClick={() => downloadPDFMutation.mutate()}
-              disabled={downloadPDFMutation.isPending}
+              disabled={downloadPDFMutation.isPending || !analysis || !productData}
             >
               <Download className="w-4 h-4 mr-2" />
-              Download PDF
+              {downloadPDFMutation.isPending ? "Generating..." : "Download PDF"}
             </Button>
           </div>
         </div>
