@@ -149,4 +149,87 @@
   .dark .bg-slate-100 input {
     color: hsl(216, 28%, 15%) !important;
   }
+
+  /* Report modal specific fixes for better readability */
+  .dark .bg-gray-50 h3,
+  .dark .bg-gray-100 h3,
+  .dark .bg-slate-50 h3,
+  .dark .bg-slate-100 h3 {
+    color: hsl(216, 28%, 20%) !important;
+  }
+
+  .dark .bg-gray-50 p,
+  .dark .bg-gray-100 p,
+  .dark .bg-slate-50 p,
+  .dark .bg-slate-100 p {
+    color: hsl(216, 28%, 25%) !important;
+  }
+
+  .dark .bg-gray-50 .text-sm,
+  .dark .bg-gray-100 .text-sm,
+  .dark .bg-slate-50 .text-sm,
+  .dark .bg-slate-100 .text-sm {
+    color: hsl(216, 28%, 30%) !important;
+  }
+
+  .dark .bg-gray-50 strong,
+  .dark .bg-gray-100 strong,
+  .dark .bg-slate-50 strong,
+  .dark .bg-slate-100 strong {
+    color: hsl(216, 28%, 15%) !important;
+  }
+
+  /* Badge and chip elements on light backgrounds */
+  .dark .bg-gray-50 .bg-blue-100,
+  .dark .bg-gray-100 .bg-blue-100,
+  .dark .bg-slate-50 .bg-blue-100,
+  .dark .bg-slate-100 .bg-blue-100 {
+    background-color: hsl(216, 80%, 80%) !important;
+    color: hsl(216, 28%, 15%) !important;
+  }
+
+  /* Additional text elements in report sections */
+  .dark .bg-gray-50 span,
+  .dark .bg-gray-100 span,
+  .dark .bg-slate-50 span,
+  .dark .bg-slate-100 span {
+    color: hsl(216, 28%, 25%) !important;
+  }
+
+  .dark .bg-gray-50 div,
+  .dark .bg-gray-100 div,
+  .dark .bg-slate-50 div,
+  .dark .bg-slate-100 div {
+    color: hsl(216, 28%, 25%) !important;
+  }
+
+  /* List items in light background sections */
+  .dark .bg-gray-50 li,
+  .dark .bg-gray-100 li,
+  .dark .bg-slate-50 li,
+  .dark .bg-slate-100 li {
+    color: hsl(216, 28%, 25%) !important;
+  }
+
+  /* Text color classes that need overriding on light backgrounds */
+  .dark .bg-gray-50 .text-slate-600,
+  .dark .bg-gray-100 .text-slate-600,
+  .dark .bg-slate-50 .text-slate-600,
+  .dark .bg-slate-100 .text-slate-600 {
+    color: hsl(216, 28%, 30%) !important;
+  }
+
+  .dark .bg-gray-50 .text-slate-700,
+  .dark .bg-gray-100 .text-slate-700,
+  .dark .bg-slate-50 .text-slate-700,
+  .dark .bg-slate-100 .text-slate-700 {
+    color: hsl(216, 28%, 25%) !important;
+  }
+
+  .dark .bg-gray-50 .text-gray-600,
+  .dark .bg-gray-100 .text-gray-600,
+  .dark .bg-slate-50 .text-gray-600,
+  .dark .bg-slate-100 .text-gray-600 {
+    color: hsl(216, 28%, 30%) !important;
+  }
 }
