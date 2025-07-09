@@ -449,6 +449,75 @@ export default function AnalysisPanel({ analysis, productData, onAnalysisChange 
                       </div>
                     </div>
                   )}
+                  
+                  {analysis.marketAnalysis.competitiveAdvantage && (
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="font-medium text-slate-900">Competitive Advantage Analysis</h4>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => copyToClipboard(analysis.marketAnalysis.competitiveAdvantage, 'competitive-advantage')}
+                        >
+                          {copiedItems.includes('competitive-advantage') ? 
+                            <Check className="w-4 h-4 text-green-600" /> : 
+                            <Copy className="w-4 h-4" />
+                          }
+                        </Button>
+                      </div>
+                      <div className="bg-slate-50 p-4 rounded-lg">
+                        <p className="text-slate-700">{analysis.marketAnalysis.competitiveAdvantage}</p>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {analysis.marketAnalysis.pricingStrategy && (
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="font-medium text-slate-900">Pricing Strategy & Margin Analysis</h4>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => copyToClipboard(analysis.marketAnalysis.pricingStrategy, 'pricing-strategy')}
+                        >
+                          {copiedItems.includes('pricing-strategy') ? 
+                            <Check className="w-4 h-4 text-green-600" /> : 
+                            <Copy className="w-4 h-4" />
+                          }
+                        </Button>
+                      </div>
+                      <div className="bg-slate-50 p-4 rounded-lg">
+                        <p className="text-slate-700">{analysis.marketAnalysis.pricingStrategy}</p>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Market Context from User Input */}
+                  {productData && (
+                    <div>
+                      <h4 className="font-medium text-slate-900 mb-3">Market Context Analysis</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-200">
+                          <h5 className="font-medium text-indigo-900 mb-2">Target Audience</h5>
+                          <p className="text-indigo-700 text-sm">{productData.targetAudience}</p>
+                        </div>
+                        <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
+                          <h5 className="font-medium text-orange-900 mb-2">Primary Competitors</h5>
+                          <p className="text-orange-700 text-sm">{productData.competitors}</p>
+                        </div>
+                        <div className="bg-teal-50 p-4 rounded-lg border border-teal-200 md:col-span-2">
+                          <h5 className="font-medium text-teal-900 mb-2">Sales Channels</h5>
+                          <div className="flex flex-wrap gap-2">
+                            {productData.salesChannels.map((channel, index) => (
+                              <Badge key={index} variant="secondary" className="bg-teal-100 text-teal-800">
+                                {channel}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </CollapsibleContent>
               </div>
             </Collapsible>
@@ -493,6 +562,62 @@ export default function AnalysisPanel({ analysis, productData, onAnalysisChange 
                         {analysis.goToMarket.marketingAngles.map((angle: any, index: number) => (
                           <div key={index} className="bg-purple-50 p-3 rounded border border-purple-200">
                             <strong>{angle.angle}:</strong> {angle.message}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {analysis.goToMarket.channelStrategy && (
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="font-medium text-slate-900">Recommended Channel Strategy</h4>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => copyToClipboard(
+                            analysis.goToMarket.channelStrategy.join('\n'), 
+                            'channel-strategy'
+                          )}
+                        >
+                          {copiedItems.includes('channel-strategy') ? 
+                            <Check className="w-4 h-4 text-green-600" /> : 
+                            <Copy className="w-4 h-4" />
+                          }
+                        </Button>
+                      </div>
+                      <div className="space-y-2">
+                        {analysis.goToMarket.channelStrategy.map((channel: string, index: number) => (
+                          <div key={index} className="bg-blue-50 p-3 rounded border border-blue-200">
+                            <p className="text-blue-700 text-sm">• {channel}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {analysis.goToMarket.contentIdeas && (
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="font-medium text-slate-900">Content Creation Ideas</h4>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => copyToClipboard(
+                            analysis.goToMarket.contentIdeas.join('\n'), 
+                            'content-ideas'
+                          )}
+                        >
+                          {copiedItems.includes('content-ideas') ? 
+                            <Check className="w-4 h-4 text-green-600" /> : 
+                            <Copy className="w-4 h-4" />
+                          }
+                        </Button>
+                      </div>
+                      <div className="space-y-2">
+                        {analysis.goToMarket.contentIdeas.map((idea: string, index: number) => (
+                          <div key={index} className="bg-green-50 p-3 rounded border border-green-200">
+                            <p className="text-green-700 text-sm">• {idea}</p>
                           </div>
                         ))}
                       </div>
