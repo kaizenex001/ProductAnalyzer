@@ -1,0 +1,540 @@
+import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Bot, Save, Download, ChevronDown, Copy, Check } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
+import type { ProductInput } from "@shared/schema";
+
+interface AnalysisPanelProps {
+  analysis: any;
+  productData: ProductInput | null;
+  onAnalysisChange: (analysis: any) => void;
+}
+
+export default function AnalysisPanel({ analysis, productData, onAnalysisChange }: AnalysisPanelProps) {
+  const [openSections, setOpenSections] = useState({
+    customer: true,
+    positioning: false,
+    market: false,
+    gtm: false,
+  });
+  const [copiedItems, setCopiedItems] = useState<string[]>([]);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const saveReportMutation = useMutation({
+    mutationFn: async () => {
+      if (!analysis || !productData) throw new Error("No analysis or product data");
+      
+      const response = await apiRequest("POST", "/api/reports", {
+        productData,
+        analysis
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      setSaveStatus('saved');
+      queryClient.invalidateQueries({ queryKey: ["/api/reports"] });
+      toast({
+        title: "Success",
+        description: `Report for ${productData?.productName} saved!`,
+      });
+      
+      // Reset save status after 3 seconds
+      setTimeout(() => {
+        setSaveStatus('idle');
+      }, 3000);
+    },
+    onError: (error) => {
+      setSaveStatus('idle');
+      toast({
+        title: "Error",
+        description: "Failed to save report. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const downloadPDFMutation = useMutation({
+    mutationFn: async () => {
+      // For now, just show a toast. In a real implementation, you'd generate and download a PDF
+      toast({
+        title: "PDF Download",
+        description: "PDF download functionality would be implemented here.",
+      });
+    },
+  });
+
+  const toggleSection = (section: keyof typeof openSections) => {
+    setOpenSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
+  };
+
+  const copyToClipboard = async (text: string, id: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedItems(prev => [...prev, id]);
+      toast({
+        title: "Copied",
+        description: "Content copied to clipboard",
+      });
+      
+      setTimeout(() => {
+        setCopiedItems(prev => prev.filter(item => item !== id));
+      }, 2000);
+    } catch (error) {
+      toast({
+        title: "Error", 
+        description: "Failed to copy to clipboard",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleSaveReport = () => {
+    setSaveStatus('saving');
+    saveReportMutation.mutate();
+  };
+
+  if (!analysis) {
+    return (
+      <Card className="h-fit">
+        <CardHeader className="border-b border-slate-200">
+          <CardTitle className="flex items-center">
+            <Bot className="text-primary mr-3" />
+            AI Generated Analysis Report
+          </CardTitle>
+          <p className="text-slate-600 text-sm">
+            Comprehensive product analysis powered by AI
+          </p>
+        </CardHeader>
+        
+        <CardContent className="p-6">
+          <div className="text-center py-12">
+            <Bot className="mx-auto h-16 w-16 text-slate-300 mb-4" />
+            <h3 className="text-lg font-medium text-slate-900 mb-2">Ready for Analysis</h3>
+            <p className="text-slate-600">
+              Fill out the product details form and click "Analyze Product" to generate your comprehensive analysis report.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const getSaveButtonContent = () => {
+    switch (saveStatus) {
+      case 'saving':
+        return (
+          <>
+            <Save className="w-4 h-4 mr-2 animate-spin" />
+            Saving...
+          </>
+        );
+      case 'saved':
+        return (
+          <>
+            <Check className="w-4 h-4 mr-2" />
+            Saved ✓
+          </>
+        );
+      default:
+        return (
+          <>
+            <Save className="w-4 h-4 mr-2" />
+            Save Report
+          </>
+        );
+    }
+  };
+
+  return (
+    <Card className="h-fit">
+      <CardHeader className="border-b border-slate-200">
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="flex items-center">
+              <Bot className="text-primary mr-3" />
+              AI Generated Analysis Report
+            </CardTitle>
+            <p className="text-slate-600 text-sm">
+              Comprehensive product analysis powered by AI
+            </p>
+          </div>
+          <div className="flex space-x-2">
+            <Button
+              onClick={handleSaveReport}
+              disabled={saveReportMutation.isPending || saveStatus === 'saved'}
+              className={cn(
+                "bg-emerald-500 hover:bg-emerald-600",
+                saveStatus === 'saved' && "bg-gray-400 hover:bg-gray-400"
+              )}
+            >
+              {getSaveButtonContent()}
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={() => downloadPDFMutation.mutate()}
+              disabled={downloadPDFMutation.isPending}
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Download PDF
+            </Button>
+          </div>
+        </div>
+      </CardHeader>
+      
+      <CardContent className="p-6">
+        <div className="space-y-4">
+          
+          {/* Customer & Problem Analysis */}
+          {analysis.customerAnalysis && (
+            <Collapsible
+              open={openSections.customer}
+              onOpenChange={() => toggleSection('customer')}
+            >
+              <div className="border border-slate-200 rounded-lg">
+                <CollapsibleTrigger className="w-full px-4 py-3 text-left bg-primary-50 hover:bg-primary-100 rounded-t-lg border-b border-slate-200 flex items-center justify-between">
+                  <span className="font-medium text-slate-900">Customer & Problem Analysis</span>
+                  <ChevronDown className={cn(
+                    "text-slate-400 transition-transform",
+                    openSections.customer && "transform rotate-180"
+                  )} />
+                </CollapsibleTrigger>
+                <CollapsibleContent className="p-4 space-y-4">
+                  {analysis.customerAnalysis.painPoints && (
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="font-medium text-slate-900">Identified Pain Points</h4>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => copyToClipboard(
+                            analysis.customerAnalysis.painPoints.join('\n'), 
+                            'pain-points'
+                          )}
+                        >
+                          {copiedItems.includes('pain-points') ? 
+                            <Check className="w-4 h-4 text-green-600" /> : 
+                            <Copy className="w-4 h-4" />
+                          }
+                        </Button>
+                      </div>
+                      <ul className="list-disc list-inside space-y-1 text-slate-700">
+                        {analysis.customerAnalysis.painPoints.map((point: string, index: number) => (
+                          <li key={index}>{point}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  
+                  {analysis.customerAnalysis.blacAnalysis && (
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="font-medium text-slate-900">Problem Deep Dive (BLAC Analysis)</h4>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => copyToClipboard(
+                            Object.entries(analysis.customerAnalysis.blacAnalysis)
+                              .map(([key, value]) => `${key.toUpperCase()}: ${value}`)
+                              .join('\n\n'), 
+                            'blac-analysis'
+                          )}
+                        >
+                          {copiedItems.includes('blac-analysis') ? 
+                            <Check className="w-4 h-4 text-green-600" /> : 
+                            <Copy className="w-4 h-4" />
+                          }
+                        </Button>
+                      </div>
+                      <div className="bg-slate-50 p-4 rounded-lg space-y-2">
+                        <p className="text-slate-700">
+                          <strong>Background:</strong> {analysis.customerAnalysis.blacAnalysis.background}
+                        </p>
+                        <p className="text-slate-700">
+                          <strong>Learning:</strong> {analysis.customerAnalysis.blacAnalysis.learning}
+                        </p>
+                        <p className="text-slate-700">
+                          <strong>Action:</strong> {analysis.customerAnalysis.blacAnalysis.action}
+                        </p>
+                        <p className="text-slate-700">
+                          <strong>Challenge:</strong> {analysis.customerAnalysis.blacAnalysis.challenge}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {analysis.customerAnalysis.personas && (
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="font-medium text-slate-900">Target Audience Personas</h4>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => copyToClipboard(
+                            analysis.customerAnalysis.personas
+                              .map((persona: any) => `${persona.name}: ${persona.description} (${persona.demographics})`)
+                              .join('\n\n'), 
+                            'personas'
+                          )}
+                        >
+                          {copiedItems.includes('personas') ? 
+                            <Check className="w-4 h-4 text-green-600" /> : 
+                            <Copy className="w-4 h-4" />
+                          }
+                        </Button>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {analysis.customerAnalysis.personas.map((persona: any, index: number) => (
+                          <div key={index} className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                            <h5 className="font-medium text-blue-900">{persona.name}</h5>
+                            <p className="text-blue-700 text-sm mt-1">{persona.description}</p>
+                            <p className="text-blue-600 text-xs mt-2">{persona.demographics}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </CollapsibleContent>
+              </div>
+            </Collapsible>
+          )}
+
+          {/* Product Positioning & Value */}
+          {analysis.positioning && (
+            <Collapsible
+              open={openSections.positioning}
+              onOpenChange={() => toggleSection('positioning')}
+            >
+              <div className="border border-slate-200 rounded-lg">
+                <CollapsibleTrigger className="w-full px-4 py-3 text-left bg-primary-50 hover:bg-primary-100 rounded-t-lg border-b border-slate-200 flex items-center justify-between">
+                  <span className="font-medium text-slate-900">Product Positioning & Value</span>
+                  <ChevronDown className={cn(
+                    "text-slate-400 transition-transform",
+                    openSections.positioning && "transform rotate-180"
+                  )} />
+                </CollapsibleTrigger>
+                <CollapsibleContent className="p-4 space-y-4">
+                  {analysis.positioning.usp && (
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="font-medium text-slate-900">Unique Selling Proposition (USP)</h4>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => copyToClipboard(analysis.positioning.usp, 'usp')}
+                        >
+                          {copiedItems.includes('usp') ? 
+                            <Check className="w-4 h-4 text-green-600" /> : 
+                            <Copy className="w-4 h-4" />
+                          }
+                        </Button>
+                      </div>
+                      <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+                        <p className="text-slate-700">"{analysis.positioning.usp}"</p>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {analysis.positioning.visualIdentity && (
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="font-medium text-slate-900">Visual Identity & Packaging Analysis</h4>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => copyToClipboard(
+                            Object.entries(analysis.positioning.visualIdentity)
+                              .map(([key, value]) => `${key}: ${value}`)
+                              .join('\n'), 
+                            'visual-identity'
+                          )}
+                        >
+                          {copiedItems.includes('visual-identity') ? 
+                            <Check className="w-4 h-4 text-green-600" /> : 
+                            <Copy className="w-4 h-4" />
+                          }
+                        </Button>
+                      </div>
+                      <div className="bg-slate-50 p-4 rounded-lg space-y-3">
+                        <div><strong>Color Palette:</strong> {analysis.positioning.visualIdentity.colorPalette}</div>
+                        <div><strong>Typography:</strong> {analysis.positioning.visualIdentity.typography}</div>
+                        <div><strong>Packaging Design:</strong> {analysis.positioning.visualIdentity.packaging}</div>
+                        <div><strong>Brand Impression:</strong> {analysis.positioning.visualIdentity.brandImpression}</div>
+                      </div>
+                    </div>
+                  )}
+                </CollapsibleContent>
+              </div>
+            </Collapsible>
+          )}
+
+          {/* Market & Competitive Landscape */}
+          {analysis.marketAnalysis && (
+            <Collapsible
+              open={openSections.market}
+              onOpenChange={() => toggleSection('market')}
+            >
+              <div className="border border-slate-200 rounded-lg">
+                <CollapsibleTrigger className="w-full px-4 py-3 text-left bg-primary-50 hover:bg-primary-100 rounded-t-lg border-b border-slate-200 flex items-center justify-between">
+                  <span className="font-medium text-slate-900">Market & Competitive Landscape</span>
+                  <ChevronDown className={cn(
+                    "text-slate-400 transition-transform",
+                    openSections.market && "transform rotate-180"
+                  )} />
+                </CollapsibleTrigger>
+                <CollapsibleContent className="p-4 space-y-4">
+                  {analysis.marketAnalysis.swot && (
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="font-medium text-slate-900">SWOT Analysis</h4>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => copyToClipboard(
+                            Object.entries(analysis.marketAnalysis.swot)
+                              .map(([key, items]: [string, any]) => `${key.toUpperCase()}: ${items.join(', ')}`)
+                              .join('\n'), 
+                            'swot'
+                          )}
+                        >
+                          {copiedItems.includes('swot') ? 
+                            <Check className="w-4 h-4 text-green-600" /> : 
+                            <Copy className="w-4 h-4" />
+                          }
+                        </Button>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="bg-green-50 p-3 rounded border border-green-200">
+                          <h5 className="font-medium text-green-900 mb-2">Strengths</h5>
+                          <ul className="text-sm text-green-700 space-y-1">
+                            {analysis.marketAnalysis.swot.strengths?.map((item: string, index: number) => (
+                              <li key={index}>• {item}</li>
+                            ))}
+                          </ul>
+                        </div>
+                        <div className="bg-red-50 p-3 rounded border border-red-200">
+                          <h5 className="font-medium text-red-900 mb-2">Weaknesses</h5>
+                          <ul className="text-sm text-red-700 space-y-1">
+                            {analysis.marketAnalysis.swot.weaknesses?.map((item: string, index: number) => (
+                              <li key={index}>• {item}</li>
+                            ))}
+                          </ul>
+                        </div>
+                        <div className="bg-blue-50 p-3 rounded border border-blue-200">
+                          <h5 className="font-medium text-blue-900 mb-2">Opportunities</h5>
+                          <ul className="text-sm text-blue-700 space-y-1">
+                            {analysis.marketAnalysis.swot.opportunities?.map((item: string, index: number) => (
+                              <li key={index}>• {item}</li>
+                            ))}
+                          </ul>
+                        </div>
+                        <div className="bg-yellow-50 p-3 rounded border border-yellow-200">
+                          <h5 className="font-medium text-yellow-900 mb-2">Threats</h5>
+                          <ul className="text-sm text-yellow-700 space-y-1">
+                            {analysis.marketAnalysis.swot.threats?.map((item: string, index: number) => (
+                              <li key={index}>• {item}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </CollapsibleContent>
+              </div>
+            </Collapsible>
+          )}
+
+          {/* Go-To-Market Strategy */}
+          {analysis.goToMarket && (
+            <Collapsible
+              open={openSections.gtm}
+              onOpenChange={() => toggleSection('gtm')}
+            >
+              <div className="border border-slate-200 rounded-lg">
+                <CollapsibleTrigger className="w-full px-4 py-3 text-left bg-primary-50 hover:bg-primary-100 rounded-t-lg border-b border-slate-200 flex items-center justify-between">
+                  <span className="font-medium text-slate-900">Actionable Go-To-Market Strategy</span>
+                  <ChevronDown className={cn(
+                    "text-slate-400 transition-transform",
+                    openSections.gtm && "transform rotate-180"
+                  )} />
+                </CollapsibleTrigger>
+                <CollapsibleContent className="p-4 space-y-4">
+                  {analysis.goToMarket.marketingAngles && (
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="font-medium text-slate-900">Marketing Angles & Messaging Hooks</h4>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => copyToClipboard(
+                            analysis.goToMarket.marketingAngles
+                              .map((angle: any) => `${angle.angle}: ${angle.message}`)
+                              .join('\n'), 
+                            'marketing-angles'
+                          )}
+                        >
+                          {copiedItems.includes('marketing-angles') ? 
+                            <Check className="w-4 h-4 text-green-600" /> : 
+                            <Copy className="w-4 h-4" />
+                          }
+                        </Button>
+                      </div>
+                      <div className="space-y-2">
+                        {analysis.goToMarket.marketingAngles.map((angle: any, index: number) => (
+                          <div key={index} className="bg-purple-50 p-3 rounded border border-purple-200">
+                            <strong>{angle.angle}:</strong> {angle.message}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {analysis.goToMarket.productDescriptions && (
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="font-medium text-slate-900">Product Descriptions (3 Tone Options)</h4>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => copyToClipboard(
+                            analysis.goToMarket.productDescriptions
+                              .map((desc: any) => `${desc.tone}: ${desc.description}`)
+                              .join('\n\n'), 
+                            'descriptions'
+                          )}
+                        >
+                          {copiedItems.includes('descriptions') ? 
+                            <Check className="w-4 h-4 text-green-600" /> : 
+                            <Copy className="w-4 h-4" />
+                          }
+                        </Button>
+                      </div>
+                      <div className="space-y-4">
+                        {analysis.goToMarket.productDescriptions.map((desc: any, index: number) => (
+                          <div key={index} className="border border-slate-200 rounded-lg p-4">
+                            <h5 className="font-medium text-slate-900 mb-2">{desc.tone} Tone</h5>
+                            <p className="text-slate-700 text-sm">{desc.description}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </CollapsibleContent>
+              </div>
+            </Collapsible>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
