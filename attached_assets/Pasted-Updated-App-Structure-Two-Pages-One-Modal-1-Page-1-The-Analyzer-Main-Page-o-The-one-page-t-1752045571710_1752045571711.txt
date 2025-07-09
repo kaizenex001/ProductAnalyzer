@@ -1,0 +1,103 @@
+Updated App Structure: Two Pages + One Modal
+1.	Page 1: The Analyzer (Main Page)
+o	The one-page, two-panel UI for input and real-time analysis remains the same.
+o	Key Addition: A navigation header and a "Save" button.
+2.	Page 2: My Reports (New Page)
+o	A clean, card-based list of all saved analyses.
+3.	Component: Report Detail Modal
+o	A pop-up view that displays the full saved report, triggered from the "My Reports" page.
+________________________________________
+UI & UX Flow with the New Page
+1.	Analysis & Save: The user generates a report on the Analyzer Page. In the right-side AI Analysis panel, they now see two buttons: [ Download Report (PDF) ] and [ Save Report ].
+2.	Confirmation: Upon clicking [ Save Report ], the button changes to [ Saved ✓ ] and a small notification ("Report for [Product Name] saved!") briefly appears.
+3.	Navigation: The user clicks on the "My Reports" link in the top navigation bar.
+4.	Viewing History: They are taken to the My Reports Page, which displays a card for each saved analysis.
+5.	Opening Detail: The user clicks on a report card.
+6.	Reviewing: The Report Detail Modal appears over the page, showing all the original inputs and the full AI analysis in a clean, two-column layout.
+
+Panel 1: USER INPUT (Left Side)
+A single form structured with collapsible accordions to keep the UI clean.
+•	Header: Input Product Details
+•	Accordion 1: Product Fundamentals
+o	Image Upload: Product Image (with a large, clear drop zone)
+o	Text Input: Product Name
+o	Dropdown: Product Category
+o	Text Area: One-Sentence Pitch
+o	Text Area: Key Features & Benefits
+•	Accordion 2: Production & Pricing
+o	Number Input (Currency): Cost of Goods Sold (Per Unit)
+o	Number Input (Currency): Retail Price (MSRP)
+o	Number Input (Currency): Intended Promo Price
+o	Text Area: Materials / Ingredients / Tech Stack
+o	Text Input (Tags): Product Variants (e.g., Red, Blue, 50ml)
+•	Accordion 3: Market Context
+o	Text Area: Intended Target Audience
+o	Text Input (Tags): Primary Competitors (1-3 names)
+o	Checkboxes/Tags: Current/Planned Sales Channels
+•	Primary Call-to-Action Button (at the bottom):
+o	[ Analyze Product ]
+________________________________________
+Panel 2: AI ANALYSIS (Right Side)
+The output, structured with collapsible accordions. Each key piece of text has a small "copy to clipboard" icon next to it.
+•	Header: AI Generated Analysis Report
+•	Action Button (at the top): [ Download Report (PDF) ]
+•	Accordion 1: Customer & Problem Analysis
+o	List: Identified Pain Points
+o	Text: Problem Deep Dive (BLAC Analysis)
+o	Card Layout: Generated Target Audience Personas (2-3 options)
+o	Text: Minimum Viable Segment
+•	Accordion 2: Product Positioning & Value
+o	Text: Unique Selling Proposition (USP)
+o	Text: Value Proposition Statement
+o	Special Section: Visual Identity & Packaging Analysis (from Image)
+	Color Palette Analysis
+	Typography & Font Impression
+	Packaging Design Critique
+	Branding & Logo Impression
+o	Generated Image: Visual Positioning Map (2x2 Grid)
+•	Accordion 3: Market & Competitive Landscape
+o	Table/Grid: SWOT Analysis (Strengths, Weaknesses, Opportunities, Threats)
+o	Text: Competitive Advantage Analysis
+o	Text & Chart: Pricing Strategy & Margin Analysis
+•	Accordion 4: Actionable Go-To-Market Strategy
+o	List: Top Marketing Angles & Messaging Hooks
+o	List: Recommended Channel Strategy
+o	List: Content Creation Ideas (Blog, Video, Social)
+o	Card Layout: Generated Product Descriptions (3 options in different tones)
+Page 2: My Reports (New)
+Header: My Saved Reports
+•	Subtitle: Click on a report to view the full analysis.
+Report List (Card-based Layout)
+•	Each saved report is a clickable card with the following summary info:
+o	Product Thumbnail Image (on the left side of the card)
+o	Product Name (large, bold text)
+o	Product Category (smaller text below the name)
+o	Date Saved (e.g., "Analyzed on: Oct 26, 2023")
+o	Delete Icon (a small trash can icon in the top-right corner of the card to remove the report)
+Empty State (Displayed if no reports are saved)
+•	Message: "You haven't saved any reports yet."
+•	Button: [ Analyze Your First Product ] (links back to the Analyzer page)
+________________________________________
+Component: Report Detail Modal
+A clean, wide pop-up that appears when a report card is clicked.
+•	Modal Header: Report for: [Product Name]
+•	Close Button: [ X ] in the top-right corner.
+Modal Body (Two-Column Layout)
+•	Left Column: Product Details (Your Input)
+o	A clean, read-only list of all the data the user originally entered.
+o	Product Image
+o	Product Name: [Value]
+o	Retail Price: [Value]
+o	Competitors: [Value]
+o	(etc. for all user inputs)
+•	Right Column: AI Insights (Saved Analysis)
+o	The complete, saved AI analysis.
+o	This section re-uses the exact same accordion structure from the main analyzer's output panel for consistency.
+o	Accordion 1: Customer & Problem Analysis
+o	Accordion 2: Product Positioning & Value
+o	Accordion 3: Market & Competitive Landscape
+o	Accordion 4: Actionable Go-To-Market Strategy
+•	Modal Footer (Optional but recommended):
+o	[ Download Report (PDF) ]
+o	[ Close ]
+
