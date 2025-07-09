@@ -395,3 +395,95 @@ Respond with just the optimized content, not additional explanation.
     result: response.choices[0].message.content || selection
   };
 }
+
+interface ChatMessage {
+  type: 'user' | 'bot';
+  content: string;
+}
+
+export async function chatWithDatabase(
+  userMessage: string,
+  conversationHistory: ChatMessage[],
+  allReports: any[]
+): Promise<{ message: string; relatedReports: number[] }> {
+  // Create a comprehensive database summary
+  const databaseContext = {
+    totalReports: allReports.length,
+    products: allReports.map(report => ({
+      id: report.id,
+      name: report.productName,
+      category: report.productCategory,
+      retailPrice: report.retailPrice,
+      costOfGoods: report.costOfGoods,
+      targetAudience: report.targetAudience,
+      competitors: report.competitors,
+      salesChannels: report.salesChannels,
+      analysis: report.analysis
+    }))
+  };
+
+  // Create conversation context
+  const historyContext = conversationHistory
+    .slice(-5) // Last 5 messages for context
+    .map(msg => `${msg.type}: ${msg.content}`)
+    .join('\n');
+
+  const response = await openai.chat.completions.create({
+    model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+    messages: [
+      {
+        role: "system",
+        content: `You are an intelligent business AI assistant with access to a comprehensive product analysis database. You can help users understand their products, compare analyses, identify trends, and provide strategic insights.
+
+DATABASE CONTEXT:
+${JSON.stringify(databaseContext, null, 2)}
+
+CAPABILITIES:
+- Answer questions about specific products and their analyses
+- Compare products across different metrics
+- Identify trends and patterns across multiple products
+- Provide strategic recommendations based on the data
+- Explain customer insights, market positioning, and competitive advantages
+- Suggest improvements based on analysis data
+
+CONVERSATION HISTORY:
+${historyContext}
+
+INSTRUCTIONS:
+- Be conversational and helpful
+- Reference specific products and data from the database when relevant
+- Provide actionable insights and recommendations
+- If asked about trends, analyze patterns across multiple products
+- Keep responses concise but informative
+- When referencing specific products, mention their names clearly
+- If no relevant data exists, clearly state that
+
+RESPONSE FORMAT:
+Respond with JSON in this exact format:
+{
+  "message": "Your helpful response here",
+  "relatedReports": [array of relevant report IDs]
+}`
+      },
+      {
+        role: "user",
+        content: userMessage
+      }
+    ],
+    response_format: { type: "json_object" },
+  });
+
+  try {
+    const result = JSON.parse(response.choices[0].message.content || '{}');
+    return {
+      message: result.message || "I'm sorry, I couldn't process that request.",
+      relatedReports: result.relatedReports || []
+    };
+  } catch (error) {
+    console.error("Error parsing chat response:", error);
+    return {
+      message: "I'm sorry, I encountered an error processing your request. Please try again.",
+      relatedReports: []
+    };
+  }
+}

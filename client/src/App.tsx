@@ -8,6 +8,7 @@ import Navigation from "@/components/navigation";
 import Analyzer from "@/pages/analyzer";
 import Reports from "@/pages/reports";
 import ContentIdeation from "@/pages/content-ideation";
+import Chatbot from "@/pages/chatbot";
 
 function Router() {
   return (
@@ -17,6 +18,7 @@ function Router() {
         <Route path="/" component={Analyzer} />
         <Route path="/reports" component={Reports} />
         <Route path="/content-ideation" component={ContentIdeation} />
+        <Route path="/chat" component={Chatbot} />
         <Route component={NotFound} />
       </Switch>
     </div>

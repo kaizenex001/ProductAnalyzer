@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { productInputSchema } from "@shared/schema";
-import { generateProductAnalysis, analyzeProductImage, generateContentIdeas, optimizeContent } from "./services/openai";
+import { generateProductAnalysis, analyzeProductImage, generateContentIdeas, optimizeContent, chatWithDatabase } from "./services/openai";
 import { generateReportPDF } from "./services/pdfGenerator";
 import multer from "multer";
 import { z } from "zod";
@@ -229,6 +229,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error optimizing content:", error);
       res.status(500).json({ message: "Failed to optimize content" });
+    }
+  });
+
+  // Chat with AI Assistant
+  app.post("/api/chat", async (req, res) => {
+    try {
+      const { message, conversationHistory } = req.body;
+
+      if (!message) {
+        return res.status(400).json({ message: "Message is required" });
+      }
+
+      // Get all reports for context
+      const reports = await storage.getReports();
+
+      const chatResponse = await chatWithDatabase(message, conversationHistory || [], reports);
+      res.json(chatResponse);
+    } catch (error) {
+      console.error("Error in chat:", error);
+      res.status(500).json({ message: "Failed to process chat message" });
     }
   });
 

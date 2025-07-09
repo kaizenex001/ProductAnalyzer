@@ -37,7 +37,8 @@ Preferred communication style: Simple, everyday language.
 1. **Analyzer Page** (`/`): Two-panel interface for product input and real-time analysis
 2. **Reports Page** (`/reports`): Card-based list of saved analysis reports
 3. **Content Ideation Page** (`/content-ideation`): AI-powered content generation with multiple options per category
-4. **Report Modal**: Overlay component for viewing detailed saved reports
+4. **AI Assistant Page** (`/chat`): Intelligent chatbot that can query and analyze all database data
+5. **Report Modal**: Overlay component for viewing detailed saved reports
 
 ### Core Features
 - **Product Input Form**: Collapsible accordion sections for organized data entry
@@ -45,8 +46,9 @@ Preferred communication style: Simple, everyday language.
 - **Report Management**: Save, view, and delete analysis reports
 - **Content Ideation**: AI-generated content with multiple options (hashtags, captions, storylines, hooks, CTAs)
 - **Content Optimization**: AI refinement of selected content pieces
+- **AI Assistant Chatbot**: Intelligent conversational AI that can query, analyze, and provide insights from all stored reports and data
 - **Image Upload**: File upload with drag-and-drop support
-- **PDF Generation**: Export reports as PDF documents
+- **PDF Generation**: Export reports as PDF documents with download functionality across all pages
 
 ### UI Components
 - **Navigation**: Persistent header with route-based active states
@@ -84,6 +86,14 @@ Preferred communication style: Simple, everyday language.
 3. Users can select preferred options and request optimization via `/api/optimize-content`
 4. All content is tailored to the specific product and target audience
 5. Content includes trending hashtags, SEO captions, storylines, hooks, and CTAs
+
+### AI Assistant Workflow
+1. Users access the chat interface at `/chat` with conversational UI
+2. AI assistant has full access to all reports and analysis data in the database
+3. Users can ask questions about products, compare analyses, identify trends, and get strategic recommendations
+4. Chat requests are processed via `/api/chat` endpoint with full database context
+5. Responses include related report IDs and actionable business insights
+6. Quick question buttons provide common query shortcuts for immediate insights
 
 ## External Dependencies
 
