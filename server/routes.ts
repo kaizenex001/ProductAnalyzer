@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { productInputSchema } from "@shared/schema";
-import { generateProductAnalysis, analyzeProductImage } from "./services/openai";
+import { generateProductAnalysis, analyzeProductImage, generateContentIdeas, optimizeContent } from "./services/openai";
 import { generateReportPDF } from "./services/pdfGenerator";
 import multer from "multer";
 import { z } from "zod";
@@ -175,6 +175,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error generating PDF:", error);
       res.status(500).json({ message: "Failed to generate PDF" });
+    }
+  });
+
+  // Generate content ideas
+  app.post("/api/generate-content", async (req, res) => {
+    try {
+      const { reportId } = req.body;
+
+      if (!reportId) {
+        return res.status(400).json({ message: "Report ID is required" });
+      }
+
+      const id = parseInt(reportId);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid report ID" });
+      }
+
+      const report = await storage.getReport(id);
+      if (!report) {
+        return res.status(404).json({ message: "Report not found" });
+      }
+
+      const contentIdeas = await generateContentIdeas(report);
+      res.json(contentIdeas);
+    } catch (error) {
+      console.error("Error generating content ideas:", error);
+      res.status(500).json({ message: "Failed to generate content ideas" });
+    }
+  });
+
+  // Optimize content selection
+  app.post("/api/optimize-content", async (req, res) => {
+    try {
+      const { reportId, category, selection, context } = req.body;
+
+      if (!reportId || !category || !selection) {
+        return res.status(400).json({ message: "Report ID, category, and selection are required" });
+      }
+
+      const id = parseInt(reportId);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid report ID" });
+      }
+
+      const report = await storage.getReport(id);
+      if (!report) {
+        return res.status(404).json({ message: "Report not found" });
+      }
+
+      const optimizedContent = await optimizeContent(report, category, selection, context);
+      res.json(optimizedContent);
+    } catch (error) {
+      console.error("Error optimizing content:", error);
+      res.status(500).json({ message: "Failed to optimize content" });
     }
   });
 

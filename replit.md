@@ -36,12 +36,15 @@ Preferred communication style: Simple, everyday language.
 ### Page Structure
 1. **Analyzer Page** (`/`): Two-panel interface for product input and real-time analysis
 2. **Reports Page** (`/reports`): Card-based list of saved analysis reports
-3. **Report Modal**: Overlay component for viewing detailed saved reports
+3. **Content Ideation Page** (`/content-ideation`): AI-powered content generation with multiple options per category
+4. **Report Modal**: Overlay component for viewing detailed saved reports
 
 ### Core Features
 - **Product Input Form**: Collapsible accordion sections for organized data entry
 - **AI Analysis Panel**: Real-time display of generated analysis with copy-to-clipboard functionality
 - **Report Management**: Save, view, and delete analysis reports
+- **Content Ideation**: AI-generated content with multiple options (hashtags, captions, storylines, hooks, CTAs)
+- **Content Optimization**: AI refinement of selected content pieces
 - **Image Upload**: File upload with drag-and-drop support
 - **PDF Generation**: Export reports as PDF documents
 
@@ -74,6 +77,13 @@ Preferred communication style: Simple, everyday language.
 2. Multer processes multipart form data with file validation
 3. Images are stored and URLs returned for form integration
 4. Optional image analysis integration with OpenAI Vision API
+
+### Content Generation Workflow
+1. Users select a saved product report as context for content generation
+2. AI generates multiple options for each content category via `/api/generate-content`
+3. Users can select preferred options and request optimization via `/api/optimize-content`
+4. All content is tailored to the specific product and target audience
+5. Content includes trending hashtags, SEO captions, storylines, hooks, and CTAs
 
 ## External Dependencies
 

@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { BarChart3, Microscope, Folder } from "lucide-react";
+import { BarChart3, Microscope, Folder, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function Navigation() {
@@ -15,6 +15,11 @@ export default function Navigation() {
       path: "/reports",
       label: "My Reports", 
       icon: Folder,
+    },
+    {
+      path: "/content-ideation",
+      label: "Content Ideation",
+      icon: Sparkles,
     },
   ];
 

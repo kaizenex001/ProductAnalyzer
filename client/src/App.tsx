@@ -7,6 +7,7 @@ import NotFound from "@/pages/not-found";
 import Navigation from "@/components/navigation";
 import Analyzer from "@/pages/analyzer";
 import Reports from "@/pages/reports";
+import ContentIdeation from "@/pages/content-ideation";
 
 function Router() {
   return (
@@ -15,6 +16,7 @@ function Router() {
       <Switch>
         <Route path="/" component={Analyzer} />
         <Route path="/reports" component={Reports} />
+        <Route path="/content-ideation" component={ContentIdeation} />
         <Route component={NotFound} />
       </Switch>
     </div>

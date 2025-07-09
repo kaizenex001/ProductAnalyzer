@@ -224,3 +224,174 @@ export async function analyzeProductImage(base64Image: string): Promise<string> 
     throw new Error(`Failed to analyze image: ${error.message}`);
   }
 }
+
+interface ContentIdeas {
+  hashtags: {
+    trending: string[];
+    niche: string[];
+    branded: string[];
+  };
+  captions: {
+    engaging: string;
+    informative: string;
+    promotional: string;
+  };
+  storylines: {
+    problemSolution: string;
+    behindTheScenes: string;
+    customerStory: string;
+    educational: string;
+  };
+  hooks: {
+    question: string;
+    statistic: string;
+    controversy: string;
+    personal: string;
+  };
+  callToActions: {
+    soft: string;
+    direct: string;
+    urgent: string;
+  };
+}
+
+export async function generateContentIdeas(reportData: any): Promise<ContentIdeas> {
+  const analysis = typeof reportData.analysis === 'string' 
+    ? JSON.parse(reportData.analysis) 
+    : reportData.analysis;
+
+  const prompt = `
+You are a content marketing expert and social media strategist. Based on the following product data and analysis, generate comprehensive content ideas in JSON format.
+
+Product Information:
+- Name: ${reportData.productName}
+- Category: ${reportData.productCategory}
+- Pitch: ${reportData.oneSentencePitch}
+- Key Features: ${reportData.keyFeatures}
+- Target Audience: ${reportData.targetAudience}
+- Competitors: ${reportData.competitors}
+- Sales Channels: ${reportData.salesChannels}
+
+Product Analysis Insights:
+- Value Proposition: ${analysis?.positioning?.valueProposition || 'Not specified'}
+- Target Pain Points: ${analysis?.customerAnalysis?.painPoints?.join(', ') || 'Not specified'}
+- Marketing Angles: ${analysis?.goToMarket?.marketingAngles?.map((a: any) => a.angle).join(', ') || 'Not specified'}
+
+Generate content ideas in this exact JSON structure:
+{
+  "hashtags": {
+    "trending": ["array of 8-10 trending hashtags relevant to the product and industry"],
+    "niche": ["array of 8-10 niche-specific hashtags for targeted reach"],
+    "branded": ["array of 6-8 branded hashtags incorporating product name and category"]
+  },
+  "captions": {
+    "engaging": "An engaging, conversational caption (150-200 words) that tells a story and creates emotional connection",
+    "informative": "An informative, educational caption (150-200 words) that highlights product benefits and features",
+    "promotional": "A promotional caption (100-150 words) with clear value proposition and call-to-action"
+  },
+  "storylines": {
+    "problemSolution": "A storyline focusing on the problem this product solves and the transformation it provides",
+    "behindTheScenes": "A behind-the-scenes storyline about product development, materials, or company story",
+    "customerStory": "A customer success story or testimonial-style storyline",
+    "educational": "An educational storyline that teaches something valuable related to the product category"
+  },
+  "hooks": {
+    "question": "An intriguing question that makes people want to learn more",
+    "statistic": "A compelling statistic or fact related to the problem or industry",
+    "controversy": "A thought-provoking or slightly controversial statement that sparks discussion",
+    "personal": "A personal, relatable opening that creates instant connection"
+  },
+  "callToActions": {
+    "soft": "A gentle, non-pushy call-to-action that guides users naturally",
+    "direct": "A clear, straightforward call-to-action with specific instructions",
+    "urgent": "An urgent call-to-action that creates FOMO or time sensitivity"
+  }
+}
+
+Make sure all content is:
+- Tailored specifically to the product and target audience
+- SEO-optimized with relevant keywords
+- Platform-agnostic but optimized for social media engagement
+- Authentic and brand-appropriate
+- Action-oriented and conversion-focused
+`;
+
+  const response = await openai.chat.completions.create({
+    model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+    messages: [
+      {
+        role: "system",
+        content: "You are an expert content marketing strategist specializing in social media and digital marketing. Always respond with valid JSON in the exact format requested."
+      },
+      {
+        role: "user",
+        content: prompt
+      }
+    ],
+    response_format: { type: "json_object" },
+    temperature: 0.8,
+  });
+
+  try {
+    const contentIdeas = JSON.parse(response.choices[0].message.content || '{}');
+    return contentIdeas;
+  } catch (error) {
+    throw new Error("Failed to parse content ideas response");
+  }
+}
+
+export async function optimizeContent(
+  reportData: any, 
+  category: string, 
+  selection: string, 
+  context: ContentIdeas
+): Promise<{ result: string }> {
+  const analysis = typeof reportData.analysis === 'string' 
+    ? JSON.parse(reportData.analysis) 
+    : reportData.analysis;
+
+  const prompt = `
+You are a content optimization expert. Based on the user's selection and the broader context, optimize and improve the selected content piece.
+
+Product Context:
+- Name: ${reportData.productName}
+- Category: ${reportData.productCategory}
+- Target Audience: ${reportData.targetAudience}
+- Value Proposition: ${analysis?.positioning?.valueProposition || 'Not specified'}
+
+User Selected:
+Category: ${category}
+Content: "${selection}"
+
+Context from other generated content:
+${JSON.stringify(context, null, 2)}
+
+Please optimize the selected content by:
+1. Making it more engaging and compelling
+2. Better aligning with the target audience
+3. Incorporating insights from the product analysis
+4. Enhancing SEO and social media optimization
+5. Improving conversion potential
+
+Respond with just the optimized content, not additional explanation.
+`;
+
+  const response = await openai.chat.completions.create({
+    model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+    messages: [
+      {
+        role: "system",
+        content: "You are a content optimization expert. Provide only the optimized content without explanations or formatting."
+      },
+      {
+        role: "user",
+        content: prompt
+      }
+    ],
+    temperature: 0.7,
+  });
+
+  return {
+    result: response.choices[0].message.content || selection
+  };
+}
