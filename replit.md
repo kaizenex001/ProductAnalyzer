@@ -47,11 +47,13 @@ Preferred communication style: Simple, everyday language.
 - **Content Ideation**: AI-generated content with multiple options (hashtags, captions, storylines, hooks, CTAs)
 - **Content Optimization**: AI refinement of selected content pieces
 - **AI Assistant Chatbot**: Intelligent conversational AI that can query, analyze, and provide insights from all stored reports and data
+- **Dark/Light Mode Toggle**: Theme switching with persistent user preference storage
 - **Image Upload**: File upload with drag-and-drop support
 - **PDF Generation**: Export reports as PDF documents with download functionality across all pages
 
 ### UI Components
-- **Navigation**: Persistent header with route-based active states
+- **Navigation**: Persistent header with route-based active states and theme toggle
+- **Theme System**: Complete dark/light mode implementation with CSS custom properties
 - **Forms**: Validated forms with error handling and loading states
 - **Modals**: Overlays for detailed report viewing
 - **File Upload**: Custom drag-and-drop file upload component
