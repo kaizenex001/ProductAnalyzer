@@ -19,6 +19,7 @@ import FileUpload from "@/components/ui/file-upload";
 
 interface ProductInputFormProps {
   onAnalysisComplete: (analysis: any, productData: ProductInput) => void;
+  productData?: ProductInput | null;
 }
 
 const salesChannelOptions = [
@@ -42,7 +43,7 @@ const productCategories = [
   "Office Supplies",
 ];
 
-export default function ProductInputForm({ onAnalysisComplete }: ProductInputFormProps) {
+export default function ProductInputForm({ onAnalysisComplete, productData }: ProductInputFormProps) {
   const [openSections, setOpenSections] = useState({
     fundamentals: true,
     pricing: false,
@@ -52,7 +53,7 @@ export default function ProductInputForm({ onAnalysisComplete }: ProductInputFor
 
   const form = useForm<ProductInput>({
     resolver: zodResolver(productInputSchema),
-    defaultValues: {
+    defaultValues: productData || {
       productName: "",
       productCategory: "",
       productImage: "",

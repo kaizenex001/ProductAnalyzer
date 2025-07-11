@@ -1,9 +1,27 @@
+import 'dotenv/config';
 import OpenAI from "openai";
+import memoizee from 'memoizee';
 
-// the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
-const openai = new OpenAI({ 
-  apiKey: process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY_ENV_VAR || ""
+// --- LAZY INITIALIZATION FOR THE OPENAI CLIENT ---
+// This function creates the OpenAI client instance only when it's first called.
+// memoizee ensures it only ever runs once, and subsequent calls get the same instance.
+const getOpenAIClient = memoizee(() => {
+  console.log("Attempting to initialize OpenAI client...");
+  
+  const apiKey = process.env.OPENAI_API_KEY;
+
+  if (!apiKey) {
+    // This check is crucial. It will now happen at the right time.
+    console.error("FATAL: OPENAI_API_KEY environment variable is not set.");
+    throw new Error("OPENAI_API_KEY is not configured in the environment.");
+  }
+  
+  console.log("OpenAI API Key found. Client created successfully.");
+  return new OpenAI({ apiKey });
 });
+
+
+// --- INTERFACE DEFINITIONS ---
 
 interface ProductData {
   productName: string;
@@ -71,7 +89,45 @@ interface AnalysisResult {
   };
 }
 
+interface ContentIdeas {
+  hashtags: {
+    trending: string[];
+    niche: string[];
+    branded: string[];
+  };
+  captions: {
+    engaging: string;
+    informative: string;
+    promotional: string;
+  };
+  storylines: {
+    problemSolution: string;
+    behindTheScenes: string;
+    customerStory: string;
+    educational: string;
+  };
+  hooks: {
+    question: string;
+    statistic: string;
+    controversy: string;
+    personal: string;
+  };
+  callToActions: {
+    soft: string;
+    direct: string;
+    urgent: string;
+  };
+}
+
+interface ChatMessage {
+  type: 'user' | 'bot';
+  content: string;
+}
+
+// --- API FUNCTIONS ---
+
 export async function generateProductAnalysis(productData: ProductData): Promise<AnalysisResult> {
+  const openai = getOpenAIClient(); // Get the initialized client
   const prompt = `
 You are an expert product analyst and marketing strategist. Analyze the following product data and provide a comprehensive analysis in JSON format.
 
@@ -191,11 +247,18 @@ Ensure all analysis is specific, actionable, and tailored to the provided produc
     const analysis = JSON.parse(response.choices[0].message.content || "{}");
     return analysis as AnalysisResult;
   } catch (error) {
-    throw new Error(`Failed to generate analysis: ${error.message}`);
+    let message = "Unknown error";
+    if (error instanceof Error) {
+      message = error.message;
+    } else if (typeof error === "string") {
+      message = error;
+    }
+    throw new Error(`Failed to generate analysis: ${message}`);
   }
 }
 
 export async function analyzeProductImage(base64Image: string): Promise<string> {
+  const openai = getOpenAIClient(); // Get the initialized client
   try {
     const response = await openai.chat.completions.create({
       model: "gpt-4o",
@@ -221,41 +284,18 @@ export async function analyzeProductImage(base64Image: string): Promise<string> 
 
     return response.choices[0].message.content || "";
   } catch (error) {
-    throw new Error(`Failed to analyze image: ${error.message}`);
+    let message = "Unknown error";
+    if (error instanceof Error) {
+      message = error.message;
+    } else if (typeof error === "string") {
+      message = error;
+    }
+    throw new Error(`Failed to analyze image: ${message}`);
   }
 }
 
-interface ContentIdeas {
-  hashtags: {
-    trending: string[];
-    niche: string[];
-    branded: string[];
-  };
-  captions: {
-    engaging: string;
-    informative: string;
-    promotional: string;
-  };
-  storylines: {
-    problemSolution: string;
-    behindTheScenes: string;
-    customerStory: string;
-    educational: string;
-  };
-  hooks: {
-    question: string;
-    statistic: string;
-    controversy: string;
-    personal: string;
-  };
-  callToActions: {
-    soft: string;
-    direct: string;
-    urgent: string;
-  };
-}
-
 export async function generateContentIdeas(reportData: any): Promise<ContentIdeas> {
+  const openai = getOpenAIClient(); // Get the initialized client
   const analysis = typeof reportData.analysis === 'string' 
     ? JSON.parse(reportData.analysis) 
     : reportData.analysis;
@@ -317,7 +357,7 @@ Make sure all content is:
 `;
 
   const response = await openai.chat.completions.create({
-    model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+    model: "gpt-4o",
     messages: [
       {
         role: "system",
@@ -346,6 +386,7 @@ export async function optimizeContent(
   selection: string, 
   context: ContentIdeas
 ): Promise<{ result: string }> {
+  const openai = getOpenAIClient(); // Get the initialized client
   const analysis = typeof reportData.analysis === 'string' 
     ? JSON.parse(reportData.analysis) 
     : reportData.analysis;
@@ -377,7 +418,7 @@ Respond with just the optimized content, not additional explanation.
 `;
 
   const response = await openai.chat.completions.create({
-    model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+    model: "gpt-4o",
     messages: [
       {
         role: "system",
@@ -396,17 +437,13 @@ Respond with just the optimized content, not additional explanation.
   };
 }
 
-interface ChatMessage {
-  type: 'user' | 'bot';
-  content: string;
-}
-
 export async function chatWithDatabase(
   userMessage: string,
   conversationHistory: ChatMessage[],
   allReports: any[]
 ): Promise<{ message: string; relatedReports: number[] }> {
-  // Create a comprehensive database summary
+  const openai = getOpenAIClient(); // Get the initialized client
+  
   const databaseContext = {
     totalReports: allReports.length,
     products: allReports.map(report => ({
@@ -422,14 +459,13 @@ export async function chatWithDatabase(
     }))
   };
 
-  // Create conversation context
   const historyContext = conversationHistory
-    .slice(-5) // Last 5 messages for context
+    .slice(-5)
     .map(msg => `${msg.type}: ${msg.content}`)
     .join('\n');
 
   const response = await openai.chat.completions.create({
-    model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+    model: "gpt-4o",
     messages: [
       {
         role: "system",
@@ -480,7 +516,13 @@ Respond with JSON in this exact format:
       relatedReports: result.relatedReports || []
     };
   } catch (error) {
-    console.error("Error parsing chat response:", error);
+    let message = "Unknown error";
+    if (error instanceof Error) {
+      message = error.message;
+    } else if (typeof error === "string") {
+      message = error;
+    }
+    console.error("Error parsing chat response:", message);
     return {
       message: "I'm sorry, I encountered an error processing your request. Please try again.",
       relatedReports: []

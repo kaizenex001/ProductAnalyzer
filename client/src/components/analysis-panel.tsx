@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Bot, Save, Download, ChevronDown, Copy, Check } from "lucide-react";
+import { Bot, Save, Download, ChevronDown, Copy, Check, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -135,17 +135,43 @@ export default function AnalysisPanel({ analysis, productData, onAnalysisChange 
     saveReportMutation.mutate();
   };
 
+  // LocalStorage keys
+  const ANALYSIS_KEY = "analyzer_analysis";
+  const PRODUCT_KEY = "analyzer_productData";
+
+  // Load from localStorage on mount
+  useEffect(() => {
+    const savedAnalysis = localStorage.getItem(ANALYSIS_KEY);
+    const savedProduct = localStorage.getItem(PRODUCT_KEY);
+    if (savedAnalysis) onAnalysisChange(JSON.parse(savedAnalysis));
+    // Optionally, you can set productData if you want to persist it too
+  }, []);
+
+  // Save to localStorage when analysis or productData changes
+  useEffect(() => {
+    if (analysis) localStorage.setItem(ANALYSIS_KEY, JSON.stringify(analysis));
+    if (productData) localStorage.setItem(PRODUCT_KEY, JSON.stringify(productData));
+  }, [analysis, productData]);
+
+  // Refresh handler
+  const handleRefresh = () => {
+    localStorage.removeItem(ANALYSIS_KEY);
+    localStorage.removeItem(PRODUCT_KEY);
+    onAnalysisChange(null);
+    window.location.reload();
+  };
+
   if (!analysis) {
     return (
       <Card className="h-fit">
-        <CardHeader className="border-b border-slate-200">
+        <CardHeader className="border-b border-slate-200 flex flex-row items-center justify-between">
           <CardTitle className="flex items-center">
             <Bot className="text-primary mr-3" />
-            AI Generated Analysis Report
+            AI Analysis Report
           </CardTitle>
-          <p className="text-slate-600 text-sm">
-            Comprehensive product analysis powered by AI
-          </p>
+          <Button variant="ghost" onClick={handleRefresh} title="Refresh">
+            <RefreshCw className="w-5 h-5" />
+          </Button>
         </CardHeader>
         
         <CardContent className="p-6">
@@ -189,18 +215,18 @@ export default function AnalysisPanel({ analysis, productData, onAnalysisChange 
 
   return (
     <Card className="h-fit">
-      <CardHeader className="border-b border-slate-200">
-        <div className="flex items-center justify-between">
+      <CardHeader className="border-b border-slate-200 flex flex-row items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full">
           <div>
             <CardTitle className="flex items-center">
               <Bot className="text-primary mr-3" />
-              AI Generated Analysis Report
+              AI Analysis Report
             </CardTitle>
             <p className="text-slate-600 text-sm">
               Comprehensive product analysis powered by AI
             </p>
           </div>
-          <div className="flex space-x-2">
+          <div className="flex space-x-2 mt-4 sm:mt-0 sm:flex-row flex-col">
             <Button
               onClick={handleSaveReport}
               disabled={saveReportMutation.isPending || saveStatus === 'saved'}
@@ -215,12 +241,16 @@ export default function AnalysisPanel({ analysis, productData, onAnalysisChange 
               variant="secondary"
               onClick={() => downloadPDFMutation.mutate()}
               disabled={downloadPDFMutation.isPending || !analysis || !productData}
+              className="mt-2 sm:mt-0"
             >
               <Download className="w-4 h-4 mr-2" />
               {downloadPDFMutation.isPending ? "Generating..." : "Download PDF"}
             </Button>
           </div>
         </div>
+        <Button variant="ghost" onClick={handleRefresh} title="Refresh">
+          <RefreshCw className="w-5 h-5" />
+        </Button>
       </CardHeader>
       
       <CardContent className="p-6">

@@ -137,17 +137,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      const reportData = {
-        ...validationResult.data,
-        costOfGoods: validationResult.data.costOfGoods,
-        retailPrice: validationResult.data.retailPrice,
-        promoPrice: validationResult.data.promoPrice || null,
-        salesChannels: validationResult.data.salesChannels.join(','),
-        analysis: analysis
+      // --- Start of Correction ---
+      // The original code used a flawed spread-and-overwrite pattern.
+      // The correct approach is to destructure the validated data and build a new,
+      // clean object that perfectly matches the database schema.
+
+      // 1. Destructure the validated data to separate the fields needing transformation.
+      const {
+        analysis: analysisData, // Rename to avoid redeclaration
+        ...rest
+      } = validationResult.data;
+
+      // 2. Pass the camelCase object to the storage layer, with the correct analysis field.
+      const reportDataForDb = {
+        ...rest,
+        analysis: analysis, // from req.body, not from productData
+        salesChannels: Array.isArray(rest.salesChannels)
+          ? rest.salesChannels.join(',')
+          : rest.salesChannels,
       };
 
-      const report = await storage.createReport(reportData);
-      res.json(report);
+      // 3. Pass the correctly structured object to the storage layer.
+      const newReport = await storage.createReport(reportDataForDb);
+      
+      // Use status 201 Created for a successful resource creation.
+      res.status(201).json(newReport);
+      // --- End of Correction ---
+
     } catch (error) {
       console.error("Error saving report:", error);
       res.status(500).json({ message: "Failed to save report" });
