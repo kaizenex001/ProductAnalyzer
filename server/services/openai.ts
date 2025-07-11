@@ -120,8 +120,11 @@ interface ContentIdeas {
 }
 
 interface ChatMessage {
+  id?: string;
   type: 'user' | 'bot';
   content: string;
+  timestamp?: Date;
+  relatedReports?: number[];
 }
 
 // --- API FUNCTIONS ---
@@ -444,6 +447,9 @@ export async function chatWithDatabase(
 ): Promise<{ message: string; relatedReports: number[] }> {
   const openai = getOpenAIClient(); // Get the initialized client
   
+  // Ensure conversationHistory is always an array
+  const safeConversationHistory = Array.isArray(conversationHistory) ? conversationHistory : [];
+  
   const databaseContext = {
     totalReports: allReports.length,
     products: allReports.map(report => ({
@@ -459,7 +465,7 @@ export async function chatWithDatabase(
     }))
   };
 
-  const historyContext = conversationHistory
+  const historyContext = safeConversationHistory
     .slice(-5)
     .map(msg => `${msg.type}: ${msg.content}`)
     .join('\n');

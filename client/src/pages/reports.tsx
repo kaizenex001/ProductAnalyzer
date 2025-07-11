@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Trash2, Plus, FolderOpen, Download } from "lucide-react";
+import { Trash2, Plus, FolderOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
@@ -14,9 +14,11 @@ export default function Reports() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: reports = [], isLoading } = useQuery({
+  const { data: reports = [], isLoading } = useQuery<Report[]>({
     queryKey: ["/api/reports"],
   });
+
+  console.log('Reports component rendered, selectedReportId:', selectedReportId);
 
   const deleteReportMutation = useMutation({
     mutationFn: async (reportId: number) => {
@@ -41,16 +43,6 @@ export default function Reports() {
   const handleDeleteReport = (reportId: number, e: React.MouseEvent) => {
     e.stopPropagation();
     deleteReportMutation.mutate(reportId);
-  };
-
-  const handleDownloadPDF = (reportId: number, productName: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    const link = document.createElement('a');
-    link.href = `/api/reports/${reportId}/pdf`;
-    link.download = `${productName}-analysis.pdf`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
   };
 
   if (isLoading) {
@@ -102,7 +94,10 @@ export default function Reports() {
               <Card
                 key={report.id}
                 className="cursor-pointer hover:shadow-md transition-shadow"
-                onClick={() => setSelectedReportId(report.id)}
+                onClick={() => {
+                  console.log('Card clicked, setting selectedReportId to:', report.id);
+                  setSelectedReportId(report.id);
+                }}
               >
                 <div className="relative">
                   {report.productImage ? (
@@ -117,15 +112,6 @@ export default function Reports() {
                     </div>
                   )}
                   <div className="absolute top-3 right-3 flex gap-2">
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      className="w-8 h-8 p-0 bg-white/90 hover:bg-white"
-                      onClick={(e) => handleDownloadPDF(report.id, report.productName, e)}
-                      title="Download PDF"
-                    >
-                      <Download className="w-4 h-4" />
-                    </Button>
                     <Button
                       size="sm"
                       variant="destructive"
@@ -146,7 +132,7 @@ export default function Reports() {
                     {report.productCategory}
                   </p>
                   <p className="text-xs text-slate-500">
-                    Analyzed on: {new Date(report.createdAt).toLocaleDateString()}
+                    Analyzed on: {report.createdAt ? new Date(report.createdAt).toLocaleDateString() : 'Unknown'}
                   </p>
                 </CardContent>
               </Card>
@@ -159,8 +145,18 @@ export default function Reports() {
         <ReportModal
           reportId={selectedReportId}
           isOpen={!!selectedReportId}
-          onClose={() => setSelectedReportId(null)}
+          onClose={() => {
+            console.log('Modal close called');
+            setSelectedReportId(null);
+          }}
         />
+      )}
+      
+      {/* Debug info */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="fixed bottom-4 right-4 bg-black text-white p-2 rounded text-xs">
+          selectedReportId: {selectedReportId}
+        </div>
       )}
     </>
   );

@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Copy, Check, RefreshCw, Sparkles, Download } from "lucide-react";
+import { Copy, Check, RefreshCw, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { Report } from "@shared/schema";
 
@@ -148,32 +148,6 @@ export default function ContentIdeation() {
     }));
   };
 
-  const downloadReportPDF = () => {
-    if (!selectedReport) {
-      toast({
-        title: "No report selected",
-        description: "Please select a report first",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const selectedReportData = reports.find(r => r.id.toString() === selectedReport);
-    if (selectedReportData) {
-      const link = document.createElement('a');
-      link.href = `/api/reports/${selectedReport}/pdf`;
-      link.download = `${selectedReportData.productName}-analysis.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      
-      toast({
-        title: "PDF Download",
-        description: "Report PDF download started",
-      });
-    }
-  };
-
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Header */}
@@ -223,15 +197,6 @@ export default function ContentIdeation() {
                     Generate Content Ideas
                   </>
                 )}
-              </Button>
-              <Button 
-                variant="outline"
-                onClick={downloadReportPDF}
-                disabled={!selectedReport}
-                title="Download Report PDF"
-              >
-                <Download className="w-4 h-4 mr-2" />
-                Download PDF
               </Button>
             </div>
           </div>

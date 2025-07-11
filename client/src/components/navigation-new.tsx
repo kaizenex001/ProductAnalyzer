@@ -139,8 +139,6 @@ export default function Navigation({ className }: NavigationProps) {
                 );
               })}
             </div>
-
-
           </div>
         </div>
       </nav>

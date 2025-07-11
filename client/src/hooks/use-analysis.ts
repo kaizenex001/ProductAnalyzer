@@ -1,61 +1,72 @@
-import { useMutation } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
+// Enhanced hooks for product analysis
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
+import { QUERY_KEYS, SUCCESS_MESSAGES, UI_CONSTANTS } from "@/constants";
+import { getErrorMessage, isValidFileType, isValidFileSize } from "@/lib/utils";
 import type { ProductInput } from "@shared/schema";
 
+// Product analysis hook
 export function useAnalysis() {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (data: ProductInput) => {
-      const response = await apiRequest("POST", "/api/analyze", data);
-      return response.json();
+      const response = await api.analyzeProduct(data);
+      return response;
     },
-    onSuccess: () => {
+    onSuccess: (analysis) => {
+      // Cache the analysis result
+      queryClient.setQueryData(QUERY_KEYS.ANALYSIS, analysis);
+      
       toast({
-        title: "Analysis Complete",
-        description: "Your product analysis has been generated successfully.",
+        title: "Success",
+        description: SUCCESS_MESSAGES.ANALYSIS_COMPLETE,
+        variant: "default",
       });
     },
     onError: (error) => {
       toast({
         title: "Analysis Failed",
-        description: "Failed to generate product analysis. Please try again.",
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     },
   });
 }
 
+// Image upload hook with validation
 export function useImageUpload() {
   const { toast } = useToast();
 
   return useMutation({
     mutationFn: async (file: File) => {
-      const formData = new FormData();
-      formData.append('image', file);
-      
-      const response = await fetch('/api/upload-image', {
-        method: 'POST',
-        body: formData,
-      });
-      
-      if (!response.ok) {
-        throw new Error('Upload failed');
+      // Validate file type
+      if (!isValidFileType(file, [...UI_CONSTANTS.ALLOWED_IMAGE_TYPES])) {
+        throw new Error('Please select a valid image file (JPEG, PNG, WebP, or GIF)');
       }
       
-      return response.json();
+      // Validate file size
+      if (!isValidFileSize(file, UI_CONSTANTS.MAX_FILE_SIZE)) {
+        throw new Error('File size must be less than 10MB');
+      }
+      
+      const result = await api.uploadImage(file);
+      return result;
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
       toast({
         title: "Success",
-        description: "Image uploaded successfully",
+        description: SUCCESS_MESSAGES.FILE_UPLOADED,
+        variant: "default",
       });
+      return result;
     },
-    onError: () => {
+    onError: (error) => {
       toast({
         title: "Upload Failed",
-        description: "Failed to upload image. Please try again.",
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     },

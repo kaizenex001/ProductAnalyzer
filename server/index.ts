@@ -1,12 +1,82 @@
+// Enhanced server setup with comprehensive middleware and error handling
 import 'dotenv/config';
 import express, { type Request, Response, NextFunction } from "express";
+import cors from "cors";
+import helmet from "helmet";
+import compression from "compression";
+import rateLimit from "express-rate-limit";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { 
+  errorHandler, 
+  requestLogger, 
+  sanitizeInput, 
+  formatResponse, 
+  healthCheck, 
+  notFoundHandler,
+  getCorsOptions,
+  createRateLimitMessage
+} from "./middleware";
+import { 
+  SERVER_CONFIG, 
+  RATE_LIMIT_CONFIG, 
+  SECURITY_CONFIG, 
+  API_ENDPOINTS,
+  validateEnvironment 
+} from "./config";
+
+// Validate environment variables on startup
+try {
+  validateEnvironment();
+  console.log("✅ Environment validation passed");
+} catch (error) {
+  console.error("❌ Environment validation failed:", (error as Error).message);
+  process.exit(1);
+}
 
 const app = express();
+
+// Trust proxy for accurate IP addresses
+app.set("trust proxy", 1);
+
+// Security middleware
+app.use(helmet(SECURITY_CONFIG.HELMET_CONFIG));
+
+// CORS configuration
+const corsOptions = getCorsOptions(['http://localhost:5173', 'http://localhost:3000', 'http://127.0.0.1:5001']);
+app.use(cors(corsOptions));
+
+// Rate limiting for API routes
+const rateLimiter = rateLimit({
+  windowMs: RATE_LIMIT_CONFIG.WINDOW_MS,
+  max: RATE_LIMIT_CONFIG.MAX_REQUESTS,
+  message: createRateLimitMessage(
+    RATE_LIMIT_CONFIG.WINDOW_MS,
+    RATE_LIMIT_CONFIG.MAX_REQUESTS
+  ),
+  standardHeaders: true,
+  legacyHeaders: false,
+  skipSuccessfulRequests: RATE_LIMIT_CONFIG.SKIP_SUCCESSFUL_REQUESTS,
+  skipFailedRequests: RATE_LIMIT_CONFIG.SKIP_FAILED_REQUESTS,
+});
+
+// Apply rate limiting to API routes only
+app.use('/api', rateLimiter);
+
+// Body parsing middleware
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: false, limit: '50mb' }));
 
+// Compression middleware
+app.use(compression());
+
+// Input sanitization
+app.use(sanitizeInput);
+
+// Response formatting
+app.use(formatResponse);
+
+// Enhanced request logging
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
@@ -37,32 +107,62 @@ app.use((req, res, next) => {
   next();
 });
 
+// Health check endpoint
+app.get('/api' + API_ENDPOINTS.HEALTH, healthCheck);
+
+// Graceful shutdown handling
+process.on('SIGTERM', () => {
+  console.log('📴 SIGTERM received, shutting down gracefully...');
+  process.exit(0);
+});
+
+process.on('SIGINT', () => {
+  console.log('📴 SIGINT received, shutting down gracefully...');
+  process.exit(0);
+});
+
+// Unhandled promise rejection handler
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
+  process.exit(1);
+});
+
+// Uncaught exception handler
+process.on('uncaughtException', (error) => {
+  console.error('❌ Uncaught Exception:', error);
+  process.exit(1);
+});
+
 (async () => {
-  await registerRoutes(app);
+  try {
+    await registerRoutes(app);
+    console.log("✅ API routes registered successfully");
 
-  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-    const status = err.status || err.statusCode || 500;
-    const message = err.message || "Internal Server Error";
+    // 404 handler for API routes
+    app.use('/api', notFoundHandler);
 
-    res.status(status).json({ message });
-    throw err;
-  });
+    // Enhanced global error handler
+    app.use(errorHandler);
 
-  // importantly only setup vite in development and after
-  // setting up all the other routes so the catch-all route
-  // doesn't interfere with the other routes
-  if (app.get("env") === "development") {
-    await setupVite(app);
-  } else {
-    serveStatic(app);
+    // Setup Vite for development or serve static files for production
+    if (app.get("env") === "development") {
+      await setupVite(app);
+    } else {
+      serveStatic(app);
+    }
+
+    // Start server
+    const port = 5001;
+    console.log('🚀 Server is starting...');
+    app.listen(port, "127.0.0.1", () => {
+      console.log(`🚀 Server running on port ${port}`);
+      console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+      console.log(`🔗 API Base Path: /api`);
+      console.log(`⚡ Health Check: http://127.0.0.1:${port}/api${API_ENDPOINTS.HEALTH}`);
+      log(`Server running: http://127.0.0.1:${port}`);
+    });
+  } catch (error) {
+    console.error('❌ Failed to start server:', error);
+    process.exit(1);
   }
-
-  // ALWAYS serve the app on port 5000
-  // this serves both the API and the client.
-  // It is the only port that is not firewalled.
-  const port = 5001;
-  console.log('Server is starting...');
-  app.listen(port, "127.0.0.1", () => {
-    log(`Server running: http://127.0.0.1:${port}`);
-  }); // Changed port to 5001
 })();

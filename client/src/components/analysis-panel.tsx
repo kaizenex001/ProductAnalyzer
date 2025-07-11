@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Bot, Save, Download, ChevronDown, Copy, Check, RefreshCw } from "lucide-react";
+import { Bot, Save, ChevronDown, Copy, Check, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -10,13 +10,15 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import type { ProductInput } from "@shared/schema";
 
+
 interface AnalysisPanelProps {
   analysis: any;
   productData: ProductInput | null;
+  imageFile: File | null;
   onAnalysisChange: (analysis: any) => void;
 }
 
-export default function AnalysisPanel({ analysis, productData, onAnalysisChange }: AnalysisPanelProps) {
+export default function AnalysisPanel({ analysis, productData, imageFile, onAnalysisChange }: AnalysisPanelProps) {
   const [openSections, setOpenSections] = useState({
     customer: true,
     positioning: false,
@@ -32,10 +34,50 @@ export default function AnalysisPanel({ analysis, productData, onAnalysisChange 
     mutationFn: async () => {
       if (!analysis || !productData) throw new Error("No analysis or product data");
       
-      const response = await apiRequest("POST", "/api/reports", {
-        productData,
-        analysis
+      // Create FormData for file upload
+      const formData = new FormData();
+      
+      // Add all text fields
+      const textFields = [
+        "productName", "productCategory", "oneSentencePitch", 
+        "keyFeatures", "materials", "variants", "targetAudience", "competitors"
+      ];
+      
+      textFields.forEach((field) => {
+        const value = productData[field as keyof ProductInput];
+        formData.append(field, value ? String(value) : "");
       });
+
+      // Add numeric fields
+      const numericFields = ["costOfGoods", "retailPrice", "promoPrice"];
+      numericFields.forEach((field) => {
+        const value = productData[field as keyof ProductInput];
+        formData.append(field, value ? String(value) : "");
+      });
+
+      // Add sales channels as JSON
+      const salesChannels = productData.salesChannels || [];
+      formData.append("salesChannels", JSON.stringify(salesChannels));
+
+      // Add the image file if present
+      if (imageFile) {
+        console.log("Adding image file to FormData:", imageFile.name);
+        formData.append("productImage", imageFile);
+      }
+
+      // Add analysis as JSON
+      formData.append("analysis", JSON.stringify(analysis));
+
+      // Use fetch directly for FormData
+      const response = await fetch("/api/reports", {
+        method: "POST",
+        body: formData,
+      });
+      
+      if (!response.ok) {
+        throw new Error("Failed to save report");
+      }
+      
       return response.json();
     },
     onSuccess: () => {
@@ -56,47 +98,6 @@ export default function AnalysisPanel({ analysis, productData, onAnalysisChange 
       toast({
         title: "Error",
         description: "Failed to save report. Please try again.",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const downloadPDFMutation = useMutation({
-    mutationFn: async () => {
-      if (!analysis || !productData) throw new Error("No analysis or product data");
-      
-      // First save the report to get an ID, then download PDF
-      const saveResponse = await apiRequest("POST", "/api/reports", {
-        productData,
-        analysis
-      });
-      const report = await saveResponse.json();
-      
-      // Download PDF
-      const response = await fetch(`/api/reports/${report.id}/pdf`);
-      if (!response.ok) throw new Error("Failed to download PDF");
-      
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${productData.productName}-analysis.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/reports"] });
-      toast({
-        title: "Success",
-        description: "PDF downloaded successfully!",
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: "Failed to download PDF. Please try again.",
         variant: "destructive",
       });
     },
@@ -236,15 +237,6 @@ export default function AnalysisPanel({ analysis, productData, onAnalysisChange 
               )}
             >
               {getSaveButtonContent()}
-            </Button>
-            <Button
-              variant="secondary"
-              onClick={() => downloadPDFMutation.mutate()}
-              disabled={downloadPDFMutation.isPending || !analysis || !productData}
-              className="mt-2 sm:mt-0"
-            >
-              <Download className="w-4 h-4 mr-2" />
-              {downloadPDFMutation.isPending ? "Generating..." : "Download PDF"}
             </Button>
           </div>
         </div>

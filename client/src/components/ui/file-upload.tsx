@@ -1,12 +1,11 @@
 import { useState, useCallback } from "react";
-import { useMutation } from "@tanstack/react-query";
 import { CloudUpload, X, Image } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
 interface FileUploadProps {
-  onUpload: (imageUrl: string) => void;
+  onUpload: (imageUrl: string, file: File) => void;
   className?: string;
 }
 
@@ -15,38 +14,15 @@ export default function FileUpload({ onUpload, className }: FileUploadProps) {
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const { toast } = useToast();
 
-  const uploadMutation = useMutation({
-    mutationFn: async (file: File) => {
-      const formData = new FormData();
-      formData.append('image', file);
-      
-      const response = await fetch('/api/upload-image', {
-        method: 'POST',
-        body: formData,
-      });
-      
-      if (!response.ok) {
-        throw new Error('Upload failed');
-      }
-      
-      return response.json();
-    },
-    onSuccess: (data) => {
-      setUploadedImage(data.imageUrl);
-      onUpload(data.imageUrl);
-      toast({
-        title: "Success",
-        description: "Image uploaded successfully",
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: "Upload Failed",
-        description: "Failed to upload image. Please try again.",
-        variant: "destructive",
-      });
-    },
-  });
+  // Helper function to convert File to base64 data URL
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -68,7 +44,7 @@ export default function FileUpload({ onUpload, className }: FileUploadProps) {
     }
   }, []);
 
-  const handleFile = (file: File) => {
+  const handleFile = async (file: File) => {
     // Validate file type
     if (!file.type.startsWith('image/')) {
       toast({
@@ -89,7 +65,28 @@ export default function FileUpload({ onUpload, className }: FileUploadProps) {
       return;
     }
 
-    uploadMutation.mutate(file);
+    try {
+      // Convert file to base64 for temporary storage
+      const base64Url = await fileToBase64(file);
+      setUploadedImage(base64Url);
+      
+      // Debug logging
+      console.log("FileUpload: About to call onUpload with:", file.name, file.size);
+      alert(`FileUpload: About to call onUpload with file: ${file.name}, Size: ${file.size} bytes`);
+      
+      onUpload(base64Url, file);
+      
+      toast({
+        title: "Success",
+        description: "Image loaded successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Failed to Load Image",
+        description: "Failed to load image. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -100,7 +97,14 @@ export default function FileUpload({ onUpload, className }: FileUploadProps) {
 
   const removeImage = () => {
     setUploadedImage(null);
-    onUpload("");
+    // Reset the file input
+    const fileInput = document.getElementById('file-input') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = '';
+    }
+    // Notify parent component that image was removed
+    console.log("FileUpload: Image removed, calling onUpload with empty values");
+    onUpload("", new File([], ""));
   };
 
   if (uploadedImage) {
@@ -131,7 +135,6 @@ export default function FileUpload({ onUpload, className }: FileUploadProps) {
         dragActive
           ? "border-primary bg-primary/5"
           : "border-slate-300 hover:border-primary/50",
-        uploadMutation.isPending && "opacity-50 pointer-events-none",
         className
       )}
       onDragEnter={handleDrag}
@@ -146,21 +149,13 @@ export default function FileUpload({ onUpload, className }: FileUploadProps) {
         accept="image/*"
         onChange={handleInputChange}
         className="hidden"
-        disabled={uploadMutation.isPending}
       />
       
-      {uploadMutation.isPending ? (
-        <div className="flex flex-col items-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-3"></div>
-          <p className="text-slate-600">Uploading...</p>
-        </div>
-      ) : (
-        <div className="flex flex-col items-center">
-          <CloudUpload className="h-12 w-12 text-slate-400 mb-3" />
-          <p className="text-slate-600 mb-1">Drop image here or click to upload</p>
-          <p className="text-xs text-slate-500">PNG, JPG up to 10MB</p>
-        </div>
-      )}
+      <div className="flex flex-col items-center">
+        <CloudUpload className="h-12 w-12 text-slate-400 mb-3" />
+        <p className="text-slate-600 mb-1">Drop image here or click to upload</p>
+        <p className="text-xs text-slate-500">PNG, JPG up to 10MB</p>
+      </div>
     </div>
   );
 }

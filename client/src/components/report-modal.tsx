@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { X, Download, ChevronDown } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,8 @@ interface ReportModalProps {
 }
 
 export default function ReportModal({ reportId, isOpen, onClose }: ReportModalProps) {
+  console.log('ReportModal rendered with:', { reportId, isOpen });
+  
   const [openSections, setOpenSections] = useState({
     customer: true,
     positioning: false,
@@ -21,22 +23,18 @@ export default function ReportModal({ reportId, isOpen, onClose }: ReportModalPr
     gtm: false,
   });
 
-  const { data: report, isLoading } = useQuery({
+  const { data: report, isLoading } = useQuery<Report>({
     queryKey: ["/api/reports", reportId],
     enabled: isOpen && !!reportId,
   });
+
+  console.log('ReportModal query state:', { report, isLoading, enabled: isOpen && !!reportId });
 
   const toggleSection = (section: keyof typeof openSections) => {
     setOpenSections(prev => ({
       ...prev,
       [section]: !prev[section]
     }));
-  };
-
-  const handleDownloadPDF = () => {
-    if (report) {
-      window.open(`/api/reports/${reportId}/pdf`, '_blank');
-    }
   };
 
   if (isLoading) {
@@ -87,9 +85,6 @@ export default function ReportModal({ reportId, isOpen, onClose }: ReportModalPr
               Detailed product analysis and insights
             </DialogDescription>
           </div>
-          <Button variant="ghost" size="sm" onClick={onClose}>
-            <X className="w-4 h-4" />
-          </Button>
         </DialogHeader>
 
         {/* Modal Body */}
@@ -118,8 +113,20 @@ export default function ReportModal({ reportId, isOpen, onClose }: ReportModalPr
                 </div>
                 <div>
                   <label className="text-sm font-medium text-slate-700">Retail Price:</label>
-                  <p className="text-slate-900">${report.retailPrice}</p>
+                  <p className="text-slate-900">₱{report.retailPrice}</p>
                 </div>
+                {report.costOfGoods && (
+                  <div>
+                    <label className="text-sm font-medium text-slate-700">Cost of Goods:</label>
+                    <p className="text-slate-900">₱{report.costOfGoods}</p>
+                  </div>
+                )}
+                {report.promoPrice && (
+                  <div>
+                    <label className="text-sm font-medium text-slate-700">Promo Price:</label>
+                    <p className="text-slate-900">₱{report.promoPrice}</p>
+                  </div>
+                )}
                 {report.oneSentencePitch && (
                   <div>
                     <label className="text-sm font-medium text-slate-700">One-Sentence Pitch:</label>
@@ -152,13 +159,6 @@ export default function ReportModal({ reportId, isOpen, onClose }: ReportModalPr
           <div className="w-2/3 p-6 overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-slate-900">AI Insights (Saved Analysis)</h3>
-              <Button
-                variant="secondary"
-                onClick={handleDownloadPDF}
-              >
-                <Download className="w-4 h-4 mr-2" />
-                Download PDF
-              </Button>
             </div>
 
             <div className="space-y-4">
@@ -367,13 +367,6 @@ export default function ReportModal({ reportId, isOpen, onClose }: ReportModalPr
               )}
             </div>
           </div>
-        </div>
-
-        {/* Modal Footer */}
-        <div className="flex items-center justify-end space-x-3 p-6 border-t border-slate-200">
-          <Button variant="outline" onClick={onClose}>
-            Close
-          </Button>
         </div>
       </DialogContent>
     </Dialog>
