@@ -45,6 +45,8 @@ export default function ContentIdeation() {
   const [copiedItems, setCopiedItems] = useState<string[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [selectedItems, setSelectedItems] = useState<{[key: string]: string}>({});
+  const [optimizedContent, setOptimizedContent] = useState<{[key: string]: string}>({});
+  const [isOptimizing, setIsOptimizing] = useState(false);
 
   // Fetch saved reports
   const { data: reports = [] } = useQuery<Report[]>({
@@ -104,6 +106,9 @@ export default function ContentIdeation() {
   const optimizeSelection = async (category: string, selection: string) => {
     if (!selectedReport) return;
 
+    const optimizeKey = `${category}-${selection.substring(0, 50)}`;
+    setIsOptimizing(true);
+
     try {
       const response = await fetch("/api/optimize-content", {
         method: "POST",
@@ -121,16 +126,16 @@ export default function ContentIdeation() {
       }
 
       const optimized = await response.json();
-      setContentIdeas(prev => ({
-        ...prev!,
-        [category]: {
-          ...prev![category as keyof ContentIdeas],
-          optimized: optimized.result
-        }
+      
+      // Store the optimized content
+      setOptimizedContent(prev => ({
+        ...prev,
+        [optimizeKey]: optimized.result
       }));
 
       toast({
-        description: "Content optimized successfully!",
+        title: "Content Optimized!",
+        description: "Your content has been optimized using advanced SEO and copywriting techniques.",
       });
     } catch (error) {
       toast({
@@ -138,6 +143,8 @@ export default function ContentIdeation() {
         description: "Could not optimize content. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsOptimizing(false);
     }
   };
 
@@ -146,6 +153,38 @@ export default function ContentIdeation() {
       ...prev,
       [category]: item
     }));
+  };
+
+  const getOptimizedContent = (category: string, selection: string) => {
+    const optimizeKey = `${category}-${selection.substring(0, 50)}`;
+    return optimizedContent[optimizeKey];
+  };
+
+  const renderOptimizedContent = (category: string, selection: string) => {
+    const optimized = getOptimizedContent(category, selection);
+    if (!optimized) return null;
+
+    return (
+      <div className="mt-3 p-3 bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg">
+        <div className="flex items-center gap-2 mb-2">
+          <Sparkles className="w-4 h-4 text-purple-600" />
+          <span className="text-sm font-medium text-purple-700">Optimized Version</span>
+        </div>
+        <p className="text-slate-700 text-sm leading-relaxed">{optimized}</p>
+        <div className="mt-2 flex justify-end">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => copyToClipboard(optimized, `optimized-${category}-${selection.substring(0, 20)}`)}
+          >
+            {copiedItems.includes(`optimized-${category}-${selection.substring(0, 20)}`) ? 
+              <Check className="w-4 h-4 text-green-600" /> : 
+              <Copy className="w-4 h-4" />
+            }
+          </Button>
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -327,10 +366,11 @@ export default function ContentIdeation() {
                           variant="outline"
                           size="sm"
                           onClick={() => optimizeSelection('captions', caption)}
+                          disabled={isOptimizing}
                           className="text-purple-600 border-purple-200 hover:bg-purple-50"
                         >
                           <Sparkles className="w-3 h-3 mr-1" />
-                          Optimize
+                          {isOptimizing ? 'Optimizing...' : 'Optimize'}
                         </Button>
                         <Button
                           variant="ghost"
@@ -345,6 +385,7 @@ export default function ContentIdeation() {
                       </div>
                     </div>
                     <p className="text-slate-700 text-sm leading-relaxed">{caption}</p>
+                    {renderOptimizedContent('captions', caption)}
                   </div>
                 ))}
               </div>
@@ -369,10 +410,11 @@ export default function ContentIdeation() {
                           variant="outline"
                           size="sm"
                           onClick={() => optimizeSelection('storylines', storyline)}
+                          disabled={isOptimizing}
                           className="text-purple-600 border-purple-200 hover:bg-purple-50"
                         >
                           <Sparkles className="w-3 h-3 mr-1" />
-                          Optimize
+                          {isOptimizing ? 'Optimizing...' : 'Optimize'}
                         </Button>
                         <Button
                           variant="ghost"
@@ -387,6 +429,8 @@ export default function ContentIdeation() {
                       </div>
                     </div>
                     <p className="text-slate-700 text-sm leading-relaxed">{storyline}</p>
+                    {renderOptimizedContent('storylines', storyline)}
+                    {renderOptimizedContent('storylines', storyline)}
                   </div>
                 ))}
               </div>
@@ -404,18 +448,32 @@ export default function ContentIdeation() {
                   <div key={type} className="border border-slate-200 rounded-lg p-4">
                     <div className="flex items-center justify-between mb-2">
                       <h4 className="font-medium text-slate-900 capitalize">{type} Hook</h4>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => copyToClipboard(hook, `hook-${type}`)}
-                      >
-                        {copiedItems.includes(`hook-${type}`) ? 
-                          <Check className="w-4 h-4 text-green-600" /> : 
-                          <Copy className="w-4 h-4" />
-                        }
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => optimizeSelection('hooks', hook)}
+                          disabled={isOptimizing}
+                          className="text-purple-600 border-purple-200 hover:bg-purple-50"
+                        >
+                          <Sparkles className="w-3 h-3 mr-1" />
+                          {isOptimizing ? 'Optimizing...' : 'Optimize'}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => copyToClipboard(hook, `hook-${type}`)}
+                        >
+                          {copiedItems.includes(`hook-${type}`) ? 
+                            <Check className="w-4 h-4 text-green-600" /> : 
+                            <Copy className="w-4 h-4" />
+                          }
+                        </Button>
+                      </div>
                     </div>
                     <p className="text-slate-700 text-sm">{hook}</p>
+                    {renderOptimizedContent('hooks', hook)}
+                    {renderOptimizedContent('hooks', hook)}
                   </div>
                 ))}
               </div>
@@ -433,18 +491,32 @@ export default function ContentIdeation() {
                   <div key={type} className="border border-slate-200 rounded-lg p-4">
                     <div className="flex items-center justify-between mb-2">
                       <h4 className="font-medium text-slate-900 capitalize">{type} CTA</h4>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => copyToClipboard(cta, `cta-${type}`)}
-                      >
-                        {copiedItems.includes(`cta-${type}`) ? 
-                          <Check className="w-4 h-4 text-green-600" /> : 
-                          <Copy className="w-4 h-4" />
-                        }
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => optimizeSelection('callToActions', cta)}
+                          disabled={isOptimizing}
+                          className="text-purple-600 border-purple-200 hover:bg-purple-50"
+                        >
+                          <Sparkles className="w-3 h-3 mr-1" />
+                          {isOptimizing ? 'Optimizing...' : 'Optimize'}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => copyToClipboard(cta, `cta-${type}`)}
+                        >
+                          {copiedItems.includes(`cta-${type}`) ? 
+                            <Check className="w-4 h-4 text-green-600" /> : 
+                            <Copy className="w-4 h-4" />
+                          }
+                        </Button>
+                      </div>
                     </div>
                     <p className="text-slate-700 text-sm">{cta}</p>
+                    {renderOptimizedContent('callToActions', cta)}
+                    {renderOptimizedContent('callToActions', cta)}
                   </div>
                 ))}
               </div>

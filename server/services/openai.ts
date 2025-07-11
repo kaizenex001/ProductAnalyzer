@@ -395,29 +395,51 @@ export async function optimizeContent(
     : reportData.analysis;
 
   const prompt = `
-You are a content optimization expert. Based on the user's selection and the broader context, optimize and improve the selected content piece.
+You are an expert content optimization specialist. Your task is to transform the provided content using a sophisticated 4-step optimization algorithm.
 
-Product Context:
-- Name: ${reportData.productName}
-- Category: ${reportData.productCategory}
+PRODUCT CONTEXT:
+- Product Name: ${reportData.productName}
+- Product Category: ${reportData.productCategory}
+- Key Features: ${reportData.keyFeatures || 'Not specified'}
 - Target Audience: ${reportData.targetAudience}
-- Value Proposition: ${analysis?.positioning?.valueProposition || 'Not specified'}
+- One-line Pitch: ${reportData.oneSentencePitch || 'Not specified'}
+- Unique Selling Proposition: ${analysis?.positioning?.usp || 'Not specified'}
 
-User Selected:
-Category: ${category}
-Content: "${selection}"
+ORIGINAL TEXT TO OPTIMIZE:
+"${selection}"
 
-Context from other generated content:
-${JSON.stringify(context, null, 2)}
+OPTIMIZATION ALGORITHM:
 
-Please optimize the selected content by:
-1. Making it more engaging and compelling
-2. Better aligning with the target audience
-3. Incorporating insights from the product analysis
-4. Enhancing SEO and social media optimization
-5. Improving conversion potential
+STEP 1: DECONSTRUCT AND ANALYZE
+- Identify core concepts and key terms in the original text
+- Analyze the current tone (engaging, inspirational, trustworthy, etc.)
+- Understand the core message and intent
 
-Respond with just the optimized content, not additional explanation.
+STEP 2: KEYWORD AND TOPIC EXPANSION FOR SEO
+Think like a potential customer searching online. Based on the product info, identify what they would type into Google:
+- Generate search intent keywords (e.g., "natural balm for dry skin", "best non-greasy moisturizer")
+- Select primary and secondary keywords to weave into the new text
+- Ensure the most important keyword appears early in the content
+
+STEP 3: REWRITE USING PROVEN COPYWRITING FORMULA
+Use AIDA (Attention, Interest, Desire, Action) or PAS (Problem, Agitate, Solution) structure:
+
+THE HOOK (Problem/Attention): Start by directly addressing a customer's pain point or desire
+THE SOLUTION (Interest & Desire): Introduce the product as the hero with integrated keywords
+BENEFIT-DRIVEN BULLET POINTS (Readability): Break down key features into scannable, benefit-focused points using emojis like ✨
+THE CALL TO ACTION (Action): End with a clear, inviting next step
+
+STEP 4: FINAL POLISH AND REVIEW
+Ensure:
+- Natural language that reads like a human wrote it
+- Tone consistency that aligns with the brand
+- Uniqueness tailored to the specific product details
+- SEO optimization without keyword stuffing
+
+OUTPUT FORMAT:
+Provide ONLY the optimized content. Do not include explanations, steps, or formatting markers. The output should be ready to copy and paste directly.
+
+TONE TO MAINTAIN: Engaging, compelling, and conversion-focused while staying authentic to the brand.
 `;
 
   const response = await openai.chat.completions.create({
@@ -425,7 +447,7 @@ Respond with just the optimized content, not additional explanation.
     messages: [
       {
         role: "system",
-        content: "You are a content optimization expert. Provide only the optimized content without explanations or formatting."
+        content: "You are a content optimization expert specializing in SEO copywriting and conversion optimization. Follow the 4-step algorithm precisely and provide only the final optimized content without any explanations or formatting."
       },
       {
         role: "user",
