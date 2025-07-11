@@ -289,39 +289,47 @@ export default function AnalysisPanel({ analysis, productData, imageFile, onAnal
                     </div>
                   )}
                   
-                  {analysis.customerAnalysis.blacAnalysis && (
+                  {analysis.customerAnalysis.customerNeedsFramework && (
                     <div>
                       <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-medium text-slate-900">Problem Deep Dive (BLAC Analysis)</h4>
+                        <h4 className="font-medium text-slate-900">Customer Needs Framework</h4>
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => copyToClipboard(
-                            Object.entries(analysis.customerAnalysis.blacAnalysis)
-                              .map(([key, value]) => `${key.toUpperCase()}: ${value}`)
+                            Object.entries(analysis.customerAnalysis.customerNeedsFramework)
+                              .map(([key, value]) => `${key.toUpperCase()}: ${Array.isArray(value) ? value.join(', ') : value}`)
                               .join('\n\n'), 
-                            'blac-analysis'
+                            'customer-needs-framework'
                           )}
                         >
-                          {copiedItems.includes('blac-analysis') ? 
+                          {copiedItems.includes('customer-needs-framework') ? 
                             <Check className="w-4 h-4 text-green-600" /> : 
                             <Copy className="w-4 h-4" />
                           }
                         </Button>
                       </div>
-                      <div className="bg-slate-50 p-4 rounded-lg space-y-2">
-                        <p className="text-slate-700">
-                          <strong>Background:</strong> {analysis.customerAnalysis.blacAnalysis.background}
-                        </p>
-                        <p className="text-slate-700">
-                          <strong>Learning:</strong> {analysis.customerAnalysis.blacAnalysis.learning}
-                        </p>
-                        <p className="text-slate-700">
-                          <strong>Action:</strong> {analysis.customerAnalysis.blacAnalysis.action}
-                        </p>
-                        <p className="text-slate-700">
-                          <strong>Challenge:</strong> {analysis.customerAnalysis.blacAnalysis.challenge}
-                        </p>
+                      <div className="bg-slate-50 p-4 rounded-lg space-y-3">
+                        <div className="border-l-4 border-green-500 pl-4">
+                          <p className="text-slate-700">
+                            <strong className="text-green-700">Blatant Needs:</strong> {analysis.customerAnalysis.customerNeedsFramework.blatantNeeds?.join(', ') || 'Not specified'}
+                          </p>
+                        </div>
+                        <div className="border-l-4 border-blue-500 pl-4">
+                          <p className="text-slate-700">
+                            <strong className="text-blue-700">Latent Needs:</strong> {analysis.customerAnalysis.customerNeedsFramework.latentNeeds?.join(', ') || 'Not specified'}
+                          </p>
+                        </div>
+                        <div className="border-l-4 border-purple-500 pl-4">
+                          <p className="text-slate-700">
+                            <strong className="text-purple-700">Aspirational Needs:</strong> {analysis.customerAnalysis.customerNeedsFramework.aspirationalNeeds?.join(', ') || 'Not specified'}
+                          </p>
+                        </div>
+                        <div className="border-l-4 border-red-500 pl-4">
+                          <p className="text-slate-700">
+                            <strong className="text-red-700">Critical Needs:</strong> {analysis.customerAnalysis.customerNeedsFramework.criticalNeeds?.join(', ') || 'Not specified'}
+                          </p>
+                        </div>
                       </div>
                     </div>
                   )}
@@ -352,6 +360,22 @@ export default function AnalysisPanel({ analysis, productData, imageFile, onAnal
                             <h5 className="font-medium text-blue-900">{persona.name}</h5>
                             <p className="text-blue-700 text-sm mt-1">{persona.description}</p>
                             <p className="text-blue-600 text-xs mt-2">{persona.demographics}</p>
+                            {persona.jobsToBeDone && (
+                              <div className="mt-3 pt-3 border-t border-blue-200">
+                                <h6 className="font-medium text-blue-900 text-xs mb-2">Jobs-to-be-Done:</h6>
+                                <div className="space-y-1">
+                                  <p className="text-blue-700 text-xs">
+                                    <strong>Functional:</strong> {persona.jobsToBeDone.functional}
+                                  </p>
+                                  <p className="text-blue-700 text-xs">
+                                    <strong>Emotional:</strong> {persona.jobsToBeDone.emotional}
+                                  </p>
+                                  <p className="text-blue-700 text-xs">
+                                    <strong>Social:</strong> {persona.jobsToBeDone.social}
+                                  </p>
+                                </div>
+                              </div>
+                            )}
                           </div>
                         ))}
                       </div>
@@ -611,10 +635,25 @@ export default function AnalysisPanel({ analysis, productData, imageFile, onAnal
                           }
                         </Button>
                       </div>
-                      <div className="space-y-2">
+                      <div className="space-y-3">
                         {analysis.goToMarket.marketingAngles.map((angle: any, index: number) => (
-                          <div key={index} className="bg-purple-50 p-3 rounded border border-purple-200">
-                            <strong>{angle.angle}:</strong> {angle.message}
+                          <div key={index} className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                            <div className="flex items-center justify-between mb-2">
+                              <strong className="text-purple-900">{angle.angle}</strong>
+                              {angle.funnelStage && (
+                                <Badge 
+                                  variant="secondary" 
+                                  className={`text-xs ${
+                                    angle.funnelStage === 'TOFU' ? 'bg-green-100 text-green-700' :
+                                    angle.funnelStage === 'MOFU' ? 'bg-yellow-100 text-yellow-700' :
+                                    'bg-red-100 text-red-700'
+                                  }`}
+                                >
+                                  {angle.funnelStage}
+                                </Badge>
+                              )}
+                            </div>
+                            <p className="text-purple-700 text-sm">{angle.message}</p>
                           </div>
                         ))}
                       </div>
@@ -700,8 +739,15 @@ export default function AnalysisPanel({ analysis, productData, imageFile, onAnal
                       <div className="space-y-4">
                         {analysis.goToMarket.productDescriptions.map((desc: any, index: number) => (
                           <div key={index} className="border border-slate-200 rounded-lg p-4">
-                            <h5 className="font-medium text-slate-900 mb-2">{desc.tone} Tone</h5>
-                            <p className="text-slate-700 text-sm">{desc.description}</p>
+                            <div className="flex items-center justify-between mb-2">
+                              <h5 className="font-medium text-slate-900">{desc.tone} Tone</h5>
+                              {desc.framework && (
+                                <Badge variant="outline" className="text-xs">
+                                  {desc.framework}
+                                </Badge>
+                              )}
+                            </div>
+                            <p className="text-slate-700 text-sm leading-relaxed">{desc.description}</p>
                           </div>
                         ))}
                       </div>

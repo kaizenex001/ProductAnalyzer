@@ -42,16 +42,21 @@ interface ProductData {
 interface AnalysisResult {
   customerAnalysis: {
     painPoints: string[];
-    blacAnalysis: {
-      background: string;
-      learning: string;
-      action: string;
-      challenge: string;
+    customerNeedsFramework: {
+      blatantNeeds: string[];
+      latentNeeds: string[];
+      aspirationalNeeds: string[];
+      criticalNeeds: string[];
     };
     personas: Array<{
       name: string;
       description: string;
       demographics: string;
+      jobsToBeDone: {
+        functional: string;
+        emotional: string;
+        social: string;
+      };
     }>;
     minimumViableSegment: string;
   };
@@ -63,6 +68,7 @@ interface AnalysisResult {
       typography: string;
       packaging: string;
       brandImpression: string;
+      abTestingIdeas: string[];
     };
   };
   marketAnalysis: {
@@ -72,39 +78,69 @@ interface AnalysisResult {
       opportunities: string[];
       threats: string[];
     };
+    towsMatrix: {
+      soStrategies: string[];
+      woStrategies: string[];
+      stStrategies: string[];
+      wtStrategies: string[];
+    };
     competitiveAdvantage: string;
     pricingStrategy: string;
+    perceivedValueAnalysis: string;
   };
   goToMarket: {
     marketingAngles: Array<{
       angle: string;
       message: string;
+      funnelStage: 'TOFU' | 'MOFU' | 'BOFU';
     }>;
     channelStrategy: string[];
     contentIdeas: string[];
     productDescriptions: Array<{
       tone: string;
       description: string;
+      framework: 'Hook-Story-Offer';
     }>;
   };
 }
 
 interface ContentIdeas {
   hashtags: {
-    trending: string[];
-    niche: string[];
-    branded: string[];
+    awareness: string[];
+    communityBuilding: string[];
+    conversionFocused: string[];
   };
   captions: {
-    engaging: string;
-    informative: string;
-    promotional: string;
+    engaging: {
+      content: string;
+      abTestHooks: string[];
+    };
+    informative: {
+      content: string;
+      abTestHooks: string[];
+    };
+    promotional: {
+      content: string;
+      abTestHooks: string[];
+    };
   };
   storylines: {
-    problemSolution: string;
-    behindTheScenes: string;
-    customerStory: string;
-    educational: string;
+    problemSolution: {
+      content: string;
+      contentPillar: string;
+    };
+    behindTheScenes: {
+      content: string;
+      contentPillar: string;
+    };
+    customerStory: {
+      content: string;
+      contentPillar: string;
+    };
+    educational: {
+      content: string;
+      contentPillar: string;
+    };
   };
   hooks: {
     question: string;
@@ -132,7 +168,7 @@ interface ChatMessage {
 export async function generateProductAnalysis(productData: ProductData): Promise<AnalysisResult> {
   const openai = getOpenAIClient(); // Get the initialized client
   const prompt = `
-You are an expert product analyst and marketing strategist. Analyze the following product data and provide a comprehensive analysis in JSON format.
+You are a Senior Product Marketing Strategist with 15+ years of experience in product positioning, customer psychology, and go-to-market strategy. Your analysis should be insightful, forward-thinking, and data-driven, while remaining clear and actionable.
 
 Product Data:
 - Name: ${productData.productName}
@@ -148,85 +184,113 @@ Product Data:
 - Competitors: ${productData.competitors}
 - Sales Channels: ${productData.salesChannels.join(', ')}
 
-Please provide a detailed analysis in the following JSON structure:
+Provide a comprehensive strategic analysis in the following JSON structure:
 {
   "customerAnalysis": {
-    "painPoints": ["list of 3-5 key pain points this product addresses"],
-    "blacAnalysis": {
-      "background": "detailed background analysis",
-      "learning": "key learnings from market research",
-      "action": "recommended actions",
-      "challenge": "main challenges to address"
+    "painPoints": ["list of 3-5 key pain points with emotional depth and context"],
+    "customerNeedsFramework": {
+      "blatantNeeds": ["3-4 obvious, recognized needs the customer actively seeks to solve"],
+      "latentNeeds": ["3-4 unspoken needs the customer isn't aware of but will value once surfaced"],
+      "aspirationalNeeds": ["3-4 hopes and goals related to the customer's identity or future self"],
+      "criticalNeeds": ["3-4 mission-essential requirements where failure has serious consequences"]
     },
     "personas": [
       {
         "name": "Primary Persona Name",
-        "description": "detailed persona description",
-        "demographics": "age, income, lifestyle details"
+        "description": "detailed persona description with psychological insights",
+        "demographics": "age, income, lifestyle, values, and behavioral patterns",
+        "jobsToBeDone": {
+          "functional": "the practical job this persona hires the product to accomplish",
+          "emotional": "the emotional outcome this persona seeks from using the product",
+          "social": "how this persona wants to be perceived by others through product use"
+        }
       },
       {
-        "name": "Secondary Persona Name", 
-        "description": "detailed persona description",
-        "demographics": "age, income, lifestyle details"
+        "name": "Secondary Persona Name",
+        "description": "detailed persona description with psychological insights",
+        "demographics": "age, income, lifestyle, values, and behavioral patterns",
+        "jobsToBeDone": {
+          "functional": "the practical job this persona hires the product to accomplish",
+          "emotional": "the emotional outcome this persona seeks from using the product",
+          "social": "how this persona wants to be perceived by others through product use"
+        }
       }
     ],
-    "minimumViableSegment": "description of the most viable initial market segment"
+    "minimumViableSegment": "detailed description of the most viable initial market segment with strategic rationale"
   },
   "positioning": {
-    "usp": "clear unique selling proposition",
-    "valueProposition": "compelling value proposition statement",
+    "usp": "compelling unique selling proposition that differentiates from competitors",
+    "valueProposition": "clear value proposition that connects features to customer outcomes",
     "visualIdentity": {
-      "colorPalette": "analysis of color choices and brand impact",
-      "typography": "typography and font impression analysis",
-      "packaging": "packaging design critique and suggestions",
-      "brandImpression": "overall brand impression and positioning"
+      "colorPalette": "strategic analysis of color psychology and brand impact",
+      "typography": "typography analysis focused on brand perception and readability",
+      "packaging": "packaging design analysis with shelf appeal and user experience insights",
+      "brandImpression": "overall brand impression analysis with strategic recommendations",
+      "abTestingIdeas": [
+        "Specific A/B test idea for visual elements (e.g., 'Test current green packaging against minimalist white design for higher ad CTR')",
+        "Another actionable A/B test suggestion for different visual aspect",
+        "Third A/B test idea focusing on typography or layout elements"
+      ]
     }
   },
   "marketAnalysis": {
     "swot": {
-      "strengths": ["3-4 key strengths"],
-      "weaknesses": ["3-4 key weaknesses"], 
-      "opportunities": ["3-4 key opportunities"],
-      "threats": ["3-4 key threats"]
+      "strengths": ["3-4 key internal strengths with strategic implications"],
+      "weaknesses": ["3-4 internal weaknesses that need addressing"],
+      "opportunities": ["3-4 external opportunities in the market"],
+      "threats": ["3-4 external threats to monitor"]
     },
-    "competitiveAdvantage": "detailed competitive advantage analysis",
-    "pricingStrategy": "pricing strategy analysis and recommendations"
+    "towsMatrix": {
+      "soStrategies": ["2-3 strategies that use Strengths to capitalize on Opportunities"],
+      "woStrategies": ["2-3 strategies that address Weaknesses to capture Opportunities"],
+      "stStrategies": ["2-3 strategies that use Strengths to counter Threats"],
+      "wtStrategies": ["2-3 strategies that address Weaknesses and avoid Threats"]
+    },
+    "competitiveAdvantage": "detailed analysis of sustainable competitive advantages",
+    "pricingStrategy": "strategic pricing analysis with market positioning insights",
+    "perceivedValueAnalysis": "analysis of how to increase perceived value to justify premium pricing"
   },
   "goToMarket": {
     "marketingAngles": [
       {
         "angle": "Efficiency Hook",
-        "message": "specific marketing message"
+        "message": "compelling marketing message for this angle",
+        "funnelStage": "TOFU"
       },
       {
         "angle": "Cost Savings",
-        "message": "specific marketing message"
+        "message": "compelling marketing message for this angle",
+        "funnelStage": "MOFU"
       },
       {
-        "angle": "Innovation Angle", 
-        "message": "specific marketing message"
+        "angle": "Premium Quality",
+        "message": "compelling marketing message for this angle",
+        "funnelStage": "BOFU"
       }
     ],
-    "channelStrategy": ["recommended marketing channels"],
-    "contentIdeas": ["specific content creation ideas"],
+    "channelStrategy": ["strategic channel recommendations with rationale"],
+    "contentIdeas": ["specific, actionable content creation ideas"],
     "productDescriptions": [
       {
         "tone": "Professional",
-        "description": "professional tone product description"
+        "description": "Hook-Story-Offer framework description in professional tone",
+        "framework": "Hook-Story-Offer"
       },
       {
         "tone": "Conversational",
-        "description": "conversational tone product description"
+        "description": "Hook-Story-Offer framework description in conversational tone",
+        "framework": "Hook-Story-Offer"
       },
       {
         "tone": "Benefit-Focused",
-        "description": "benefit-focused tone product description"
+        "description": "Hook-Story-Offer framework description focusing on benefits",
+        "framework": "Hook-Story-Offer"
       }
     ]
   }
 }
 
-Ensure all analysis is specific, actionable, and tailored to the provided product data.
+Make your analysis strategic, specific, and actionable. Focus on psychological insights, market dynamics, and competitive positioning. Each section should provide both analysis and strategic recommendations.
 `;
 
   try {
@@ -235,7 +299,7 @@ Ensure all analysis is specific, actionable, and tailored to the provided produc
       messages: [
         {
           role: "system",
-          content: "You are an expert product analyst and marketing strategist. Provide detailed, actionable analysis in JSON format."
+          content: "You are a Senior Product Marketing Strategist with deep expertise in customer psychology, market positioning, and strategic business analysis. Provide insightful, forward-thinking analysis that combines data-driven insights with strategic vision."
         },
         {
           role: "user",
@@ -267,11 +331,15 @@ export async function analyzeProductImage(base64Image: string): Promise<string> 
       model: "gpt-4o",
       messages: [
         {
+          role: "system",
+          content: "You are a Senior Product Marketing Strategist specializing in visual branding and conversion optimization. Provide strategic insights with actionable A/B testing recommendations."
+        },
+        {
           role: "user",
           content: [
             {
               type: "text",
-              text: "Analyze this product image for visual identity, packaging design, color palette, and overall brand impression. Provide detailed insights about the visual elements and their marketing impact."
+              text: "Analyze this product image from a strategic marketing perspective. Focus on visual identity, packaging design, color psychology, and brand impression. Most importantly, provide specific A/B testing ideas for improving conversion rates through visual optimization. Structure your analysis to include: 1) Current visual assessment, 2) Psychological impact analysis, 3) At least 3 specific A/B testing recommendations with expected outcomes."
             },
             {
               type: "image_url",
@@ -282,7 +350,8 @@ export async function analyzeProductImage(base64Image: string): Promise<string> 
           ],
         },
       ],
-      max_tokens: 500,
+      max_tokens: 800,
+      temperature: 0.7,
     });
 
     return response.choices[0].message.content || "";
@@ -304,7 +373,7 @@ export async function generateContentIdeas(reportData: any): Promise<ContentIdea
     : reportData.analysis;
 
   const prompt = `
-You are a content marketing expert and social media strategist. Based on the following product data and analysis, generate comprehensive content ideas in JSON format.
+You are a Senior Content Marketing Strategist with expertise in social media psychology, conversion optimization, and brand storytelling. Create comprehensive content strategies that drive engagement and conversions.
 
 Product Information:
 - Name: ${reportData.productName}
@@ -315,48 +384,78 @@ Product Information:
 - Competitors: ${reportData.competitors}
 - Sales Channels: ${reportData.salesChannels}
 
-Product Analysis Insights:
+Strategic Insights:
 - Value Proposition: ${analysis?.positioning?.valueProposition || 'Not specified'}
 - Target Pain Points: ${analysis?.customerAnalysis?.painPoints?.join(', ') || 'Not specified'}
 - Marketing Angles: ${analysis?.goToMarket?.marketingAngles?.map((a: any) => a.angle).join(', ') || 'Not specified'}
 
-Generate content ideas in this exact JSON structure:
+Generate advanced content strategy in this exact JSON structure:
 {
   "hashtags": {
-    "trending": ["array of 8-10 trending hashtags relevant to the product and industry"],
-    "niche": ["array of 8-10 niche-specific hashtags for targeted reach"],
-    "branded": ["array of 6-8 branded hashtags incorporating product name and category"]
+    "awareness": ["8-10 hashtags for top-of-funnel awareness and discovery"],
+    "communityBuilding": ["8-10 hashtags for building engaged communities and fostering discussions"],
+    "conversionFocused": ["8-10 hashtags that drive purchase intent and conversions"]
   },
   "captions": {
-    "engaging": "An engaging, conversational caption (150-200 words) that tells a story and creates emotional connection",
-    "informative": "An informative, educational caption (150-200 words) that highlights product benefits and features",
-    "promotional": "A promotional caption (100-150 words) with clear value proposition and call-to-action"
+    "engaging": {
+      "content": "Story-driven caption that creates emotional connection (150-200 words)",
+      "abTestHooks": [
+        "Hook variation A: Question-based opening",
+        "Hook variation B: Personal story opening"
+      ]
+    },
+    "informative": {
+      "content": "Educational caption highlighting product benefits and features (150-200 words)",
+      "abTestHooks": [
+        "Hook variation A: Problem-focused opening",
+        "Hook variation B: Benefit-focused opening"
+      ]
+    },
+    "promotional": {
+      "content": "Conversion-focused caption with clear value proposition and CTA (100-150 words)",
+      "abTestHooks": [
+        "Hook variation A: Urgency-based opening",
+        "Hook variation B: Value-focused opening"
+      ]
+    }
   },
   "storylines": {
-    "problemSolution": "A storyline focusing on the problem this product solves and the transformation it provides",
-    "behindTheScenes": "A behind-the-scenes storyline about product development, materials, or company story",
-    "customerStory": "A customer success story or testimonial-style storyline",
-    "educational": "An educational storyline that teaches something valuable related to the product category"
+    "problemSolution": {
+      "content": "Storyline focusing on problem transformation and solution benefits",
+      "contentPillar": "Education"
+    },
+    "behindTheScenes": {
+      "content": "Behind-the-scenes storyline about product development or company values",
+      "contentPillar": "Authenticity"
+    },
+    "customerStory": {
+      "content": "Customer success story or testimonial-style storyline",
+      "contentPillar": "Social Proof"
+    },
+    "educational": {
+      "content": "Educational storyline that teaches valuable insights related to product category",
+      "contentPillar": "Expertise"
+    }
   },
   "hooks": {
-    "question": "An intriguing question that makes people want to learn more",
-    "statistic": "A compelling statistic or fact related to the problem or industry",
-    "controversy": "A thought-provoking or slightly controversial statement that sparks discussion",
-    "personal": "A personal, relatable opening that creates instant connection"
+    "question": "Intriguing question that creates curiosity and engagement",
+    "statistic": "Compelling statistic or fact that captures attention",
+    "controversy": "Thought-provoking statement that sparks discussion",
+    "personal": "Personal, relatable opening that creates instant connection"
   },
   "callToActions": {
-    "soft": "A gentle, non-pushy call-to-action that guides users naturally",
-    "direct": "A clear, straightforward call-to-action with specific instructions",
-    "urgent": "An urgent call-to-action that creates FOMO or time sensitivity"
+    "soft": "Gentle, relationship-building CTA that guides users naturally",
+    "direct": "Clear, action-oriented CTA with specific instructions",
+    "urgent": "FOMO-driven CTA that creates time sensitivity and urgency"
   }
 }
 
-Make sure all content is:
-- Tailored specifically to the product and target audience
-- SEO-optimized with relevant keywords
-- Platform-agnostic but optimized for social media engagement
-- Authentic and brand-appropriate
-- Action-oriented and conversion-focused
+Ensure all content is:
+- Strategically aligned with the product's positioning and customer psychology
+- Optimized for maximum engagement and conversion potential
+- Tailored to the specific target audience and their behavioral patterns
+- Designed for A/B testing to optimize performance
+- Authentic to the brand voice while being psychologically compelling
 `;
 
   const response = await openai.chat.completions.create({
@@ -364,7 +463,7 @@ Make sure all content is:
     messages: [
       {
         role: "system",
-        content: "You are an expert content marketing strategist specializing in social media and digital marketing. Always respond with valid JSON in the exact format requested."
+        content: "You are a Senior Content Marketing Strategist specializing in social media psychology, conversion optimization, and strategic content planning. Always respond with valid JSON in the exact format requested."
       },
       {
         role: "user",
@@ -373,6 +472,7 @@ Make sure all content is:
     ],
     response_format: { type: "json_object" },
     temperature: 0.8,
+    max_tokens: 3000,
   });
 
   try {
@@ -388,14 +488,14 @@ export async function optimizeContent(
   category: string, 
   selection: string, 
   context: ContentIdeas
-): Promise<{ result: string }> {
+): Promise<{ result: string; optimizationFocus: string }> {
   const openai = getOpenAIClient(); // Get the initialized client
   const analysis = typeof reportData.analysis === 'string' 
     ? JSON.parse(reportData.analysis) 
     : reportData.analysis;
 
   const prompt = `
-You are an expert content optimization specialist. Your task is to transform the provided content using a sophisticated 4-step optimization algorithm.
+You are a Senior Content Optimization Strategist with expertise in conversion copywriting, SEO, and psychological persuasion. Your task is to transform content using advanced optimization techniques.
 
 PRODUCT CONTEXT:
 - Product Name: ${reportData.productName}
@@ -404,42 +504,50 @@ PRODUCT CONTEXT:
 - Target Audience: ${reportData.targetAudience}
 - One-line Pitch: ${reportData.oneSentencePitch || 'Not specified'}
 - Unique Selling Proposition: ${analysis?.positioning?.usp || 'Not specified'}
+- Customer Pain Points: ${analysis?.customerAnalysis?.painPoints?.join(', ') || 'Not specified'}
 
-ORIGINAL TEXT TO OPTIMIZE:
+ORIGINAL CONTENT TO OPTIMIZE:
 "${selection}"
 
-OPTIMIZATION ALGORITHM:
+OPTIMIZATION MISSION:
+Transform this content using our 4-step strategic algorithm, then clearly state your optimization focus.
 
-STEP 1: DECONSTRUCT AND ANALYZE
-- Identify core concepts and key terms in the original text
-- Analyze the current tone (engaging, inspirational, trustworthy, etc.)
-- Understand the core message and intent
+STEP 1: STRATEGIC ANALYSIS
+- Identify the current content's strengths and weaknesses
+- Analyze the psychological triggers and conversion elements
+- Determine the most impactful optimization opportunity
 
-STEP 2: KEYWORD AND TOPIC EXPANSION FOR SEO
-Think like a potential customer searching online. Based on the product info, identify what they would type into Google:
-- Generate search intent keywords (e.g., "natural balm for dry skin", "best non-greasy moisturizer")
-- Select primary and secondary keywords to weave into the new text
-- Ensure the most important keyword appears early in the content
+STEP 2: KEYWORD & SEARCH INTENT OPTIMIZATION
+- Research customer search behavior for this product category
+- Identify high-intent keywords that customers actually use
+- Integrate keywords naturally without compromising readability
 
-STEP 3: REWRITE USING PROVEN COPYWRITING FORMULA
-Use AIDA (Attention, Interest, Desire, Action) or PAS (Problem, Agitate, Solution) structure:
+STEP 3: CONVERSION PSYCHOLOGY INTEGRATION
+Apply proven frameworks:
+- AIDA (Attention, Interest, Desire, Action) for awareness content
+- PAS (Problem, Agitate, Solution) for problem-focused content
+- Hook-Story-Offer for product descriptions
+- Social proof and urgency elements where appropriate
 
-THE HOOK (Problem/Attention): Start by directly addressing a customer's pain point or desire
-THE SOLUTION (Interest & Desire): Introduce the product as the hero with integrated keywords
-BENEFIT-DRIVEN BULLET POINTS (Readability): Break down key features into scannable, benefit-focused points using emojis like ✨
-THE CALL TO ACTION (Action): End with a clear, inviting next step
+STEP 4: STRATEGIC POLISH
+- Ensure the content aligns with the brand voice and positioning
+- Optimize for the specific platform and audience behavior
+- Add psychological triggers that drive action
+- Test emotional resonance and logical flow
 
-STEP 4: FINAL POLISH AND REVIEW
-Ensure:
-- Natural language that reads like a human wrote it
-- Tone consistency that aligns with the brand
-- Uniqueness tailored to the specific product details
-- SEO optimization without keyword stuffing
+OUTPUT REQUIREMENTS:
+1. Provide the optimized content (ready to copy/paste)
+2. State your primary optimization focus in one clear sentence
 
-OUTPUT FORMAT:
-Provide ONLY the optimized content. Do not include explanations, steps, or formatting markers. The output should be ready to copy and paste directly.
+OPTIMIZATION FOCUS OPTIONS:
+- "SEO Keyword Density and Search Visibility"
+- "Emotional Impact and Brand Storytelling"
+- "Conversion Rate and Purchase Intent"
+- "Readability and User Engagement"
+- "Social Proof and Trust Building"
+- "Urgency and FOMO Psychology"
 
-TONE TO MAINTAIN: Engaging, compelling, and conversion-focused while staying authentic to the brand.
+Be strategic, psychology-driven, and conversion-focused.
 `;
 
   const response = await openai.chat.completions.create({
@@ -447,7 +555,7 @@ TONE TO MAINTAIN: Engaging, compelling, and conversion-focused while staying aut
     messages: [
       {
         role: "system",
-        content: "You are a content optimization expert specializing in SEO copywriting and conversion optimization. Follow the 4-step algorithm precisely and provide only the final optimized content without any explanations or formatting."
+        content: "You are a Senior Content Optimization Strategist specializing in conversion copywriting, SEO psychology, and strategic persuasion. Follow the 4-step algorithm and always specify your optimization focus."
       },
       {
         role: "user",
@@ -455,10 +563,24 @@ TONE TO MAINTAIN: Engaging, compelling, and conversion-focused while staying aut
       }
     ],
     temperature: 0.7,
+    max_tokens: 1000,
   });
 
+  const fullResponse = response.choices[0].message.content || selection;
+  
+  // Extract optimization focus and optimized content
+  const focusMatch = fullResponse.match(/(?:I have optimized|Optimized for|Focus:|Primary optimization:)\s*([^.\n]+)/i);
+  const optimizationFocus = focusMatch ? focusMatch[1].trim() : "Content Enhancement and Engagement";
+  
+  // Extract the actual optimized content (remove any explanatory text)
+  const contentMatch = fullResponse.match(/(?:OPTIMIZED CONTENT:|Here's the optimized content:)?\s*"([^"]+)"/i) || 
+                       fullResponse.match(/(?:OPTIMIZED CONTENT:|Here's the optimized content:)?\s*([^"]+)$/i);
+  
+  const optimizedContent = contentMatch ? contentMatch[1].trim() : fullResponse;
+
   return {
-    result: response.choices[0].message.content || selection
+    result: optimizedContent,
+    optimizationFocus: optimizationFocus
   };
 }
 
@@ -497,35 +619,48 @@ export async function chatWithDatabase(
     messages: [
       {
         role: "system",
-        content: `You are an intelligent business AI assistant with access to a comprehensive product analysis database. You can help users understand their products, compare analyses, identify trends, and provide strategic insights.
+        content: `You are a Senior Business Intelligence AI Assistant with a friendly, encouraging, and proactive personality. You're like having a experienced marketing strategist as your personal advisor who's genuinely excited to help you succeed.
+
+PERSONALITY TRAITS:
+- Conversational and warm (use phrases like "That's a great question!" or "I'm seeing something interesting here...")
+- Proactive with strategic insights (always offer unsolicited value beyond the basic question)
+- Encouraging and supportive (celebrate wins and frame challenges as opportunities)
+- Strategic and analytical (frame all data within business context and strategic implications)
 
 DATABASE CONTEXT:
 ${JSON.stringify(databaseContext, null, 2)}
 
-CAPABILITIES:
-- Answer questions about specific products and their analyses
-- Compare products across different metrics
-- Identify trends and patterns across multiple products
-- Provide strategic recommendations based on the data
-- Explain customer insights, market positioning, and competitive advantages
-- Suggest improvements based on analysis data
-
 CONVERSATION HISTORY:
 ${historyContext}
 
-INSTRUCTIONS:
-- Be conversational and helpful
-- Reference specific products and data from the database when relevant
-- Provide actionable insights and recommendations
-- If asked about trends, analyze patterns across multiple products
-- Keep responses concise but informative
-- When referencing specific products, mention their names clearly
-- If no relevant data exists, clearly state that
+YOUR CAPABILITIES:
+- Analyze product performance and identify strategic opportunities
+- Compare products across multiple dimensions (pricing, positioning, customer segments)
+- Identify market trends and patterns across your product portfolio
+- Provide actionable strategic recommendations based on your data
+- Explain complex business concepts in simple, friendly terms
+- Suggest specific next steps and implementation strategies
+
+RESPONSE GUIDELINES:
+1. Start with an encouraging, conversational tone
+2. Answer the direct question thoroughly
+3. ALWAYS provide a strategic insight or proactive recommendation
+4. Reference specific products by name when relevant
+5. Frame data within strategic business context
+6. Suggest concrete next steps when appropriate
+7. End with an encouraging note or follow-up question
+
+EXAMPLE RESPONSE STYLE:
+"That's a great question! Looking at your data for [Product Name], I can see that [direct answer]. 
+
+What's particularly interesting is [strategic insight]. Based on the analysis, I'd recommend [specific action] because [reasoning].
+
+Have you considered [proactive suggestion]? This could be a game-changer for your [specific business area]."
 
 RESPONSE FORMAT:
-Respond with JSON in this exact format:
+Always respond with JSON in this exact format:
 {
-  "message": "Your helpful response here",
+  "message": "Your friendly, strategic response here",
   "relatedReports": [array of relevant report IDs]
 }`
       },
@@ -535,6 +670,8 @@ Respond with JSON in this exact format:
       }
     ],
     response_format: { type: "json_object" },
+    temperature: 0.8,
+    max_tokens: 1000,
   });
 
   try {
