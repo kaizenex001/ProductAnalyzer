@@ -46,7 +46,7 @@ export default function ContentIdeation() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [selectedItems, setSelectedItems] = useState<{[key: string]: string}>({});
   const [optimizedContent, setOptimizedContent] = useState<{[key: string]: string}>({});
-  const [isOptimizing, setIsOptimizing] = useState(false);
+  const [optimizingItems, setOptimizingItems] = useState<Set<string>>(new Set());
 
   // Fetch saved reports
   const { data: reports = [] } = useQuery<Report[]>({
@@ -107,7 +107,9 @@ export default function ContentIdeation() {
     if (!selectedReport) return;
 
     const optimizeKey = `${category}-${selection.substring(0, 50)}`;
-    setIsOptimizing(true);
+    
+    // Add this item to the optimizing set
+    setOptimizingItems(prev => new Set(Array.from(prev).concat(optimizeKey)));
 
     try {
       const response = await fetch("/api/optimize-content", {
@@ -144,7 +146,12 @@ export default function ContentIdeation() {
         variant: "destructive",
       });
     } finally {
-      setIsOptimizing(false);
+      // Remove this item from the optimizing set
+      setOptimizingItems(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(optimizeKey);
+        return newSet;
+      });
     }
   };
 
@@ -185,6 +192,11 @@ export default function ContentIdeation() {
         </div>
       </div>
     );
+  };
+
+  const isItemOptimizing = (category: string, selection: string) => {
+    const optimizeKey = `${category}-${selection.substring(0, 50)}`;
+    return optimizingItems.has(optimizeKey);
   };
 
   return (
@@ -366,11 +378,11 @@ export default function ContentIdeation() {
                           variant="outline"
                           size="sm"
                           onClick={() => optimizeSelection('captions', caption)}
-                          disabled={isOptimizing}
+                          disabled={isItemOptimizing('captions', caption)}
                           className="text-purple-600 border-purple-200 hover:bg-purple-50"
                         >
                           <Sparkles className="w-3 h-3 mr-1" />
-                          {isOptimizing ? 'Optimizing...' : 'Optimize'}
+                          {isItemOptimizing('captions', caption) ? 'Optimizing...' : 'Optimize'}
                         </Button>
                         <Button
                           variant="ghost"
@@ -410,11 +422,11 @@ export default function ContentIdeation() {
                           variant="outline"
                           size="sm"
                           onClick={() => optimizeSelection('storylines', storyline)}
-                          disabled={isOptimizing}
+                          disabled={isItemOptimizing('storylines', storyline)}
                           className="text-purple-600 border-purple-200 hover:bg-purple-50"
                         >
                           <Sparkles className="w-3 h-3 mr-1" />
-                          {isOptimizing ? 'Optimizing...' : 'Optimize'}
+                          {isItemOptimizing('storylines', storyline) ? 'Optimizing...' : 'Optimize'}
                         </Button>
                         <Button
                           variant="ghost"
@@ -453,11 +465,11 @@ export default function ContentIdeation() {
                           variant="outline"
                           size="sm"
                           onClick={() => optimizeSelection('hooks', hook)}
-                          disabled={isOptimizing}
+                          disabled={isItemOptimizing('hooks', hook)}
                           className="text-purple-600 border-purple-200 hover:bg-purple-50"
                         >
                           <Sparkles className="w-3 h-3 mr-1" />
-                          {isOptimizing ? 'Optimizing...' : 'Optimize'}
+                          {isItemOptimizing('hooks', hook) ? 'Optimizing...' : 'Optimize'}
                         </Button>
                         <Button
                           variant="ghost"
@@ -496,11 +508,11 @@ export default function ContentIdeation() {
                           variant="outline"
                           size="sm"
                           onClick={() => optimizeSelection('callToActions', cta)}
-                          disabled={isOptimizing}
+                          disabled={isItemOptimizing('callToActions', cta)}
                           className="text-purple-600 border-purple-200 hover:bg-purple-50"
                         >
                           <Sparkles className="w-3 h-3 mr-1" />
-                          {isOptimizing ? 'Optimizing...' : 'Optimize'}
+                          {isItemOptimizing('callToActions', cta) ? 'Optimizing...' : 'Optimize'}
                         </Button>
                         <Button
                           variant="ghost"
