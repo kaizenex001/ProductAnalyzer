@@ -1,0 +1,60 @@
+# Dependencies
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Production builds
+dist
+build
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Editor directories and files
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Development files
+.git
+.gitignore
+README.md
+REFACTORING_SUMMARY.md
+replit.md
+
+# Temporary files
+*.tmp
+*.temp
+
+# Cache directories
+.cache
+.parcel-cache
+.vercel
+
+# Client source (since we build it)
+client/src
+client/public
+client/index.html
+
+# Development configs
+vite.config.ts
+tailwind.config.ts
+postcss.config.js
+tsconfig.json
+components.json
+
+# Assets
+attached_assets

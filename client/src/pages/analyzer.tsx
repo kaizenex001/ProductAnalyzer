@@ -44,22 +44,28 @@ export default function Analyzer() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        
-        {/* The ProductInputForm receives the handler function. When it calls this
-            function, it will provide the analysis, form data, AND the image file. */}
-        <ProductInputForm onAnalysisComplete={handleAnalysisComplete} />
-        
-        {/* The AnalysisPanel receives all the data it needs to perform the final save.
-            This now includes the imageFile. */}
-        <AnalysisPanel 
-          analysis={currentAnalysis} 
-          productData={productData}
-          imageFile={imageFile} // NEW: The image file is passed down as a prop.
-          onAnalysisChange={setCurrentAnalysis}
-        />
-        
+    <div className="min-h-screen bg-background">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
+          
+          {/* The ProductInputForm receives the handler function. When it calls this
+              function, it will provide the analysis, form data, AND the image file. */}
+          <div className="order-1 xl:order-1">
+            <ProductInputForm onAnalysisComplete={handleAnalysisComplete} />
+          </div>
+          
+          {/* The AnalysisPanel receives all the data it needs to perform the final save.
+              This now includes the imageFile. */}
+          <div className="order-2 xl:order-2">
+            <AnalysisPanel 
+              analysis={currentAnalysis} 
+              productData={productData}
+              imageFile={imageFile} // NEW: The image file is passed down as a prop.
+              onAnalysisChange={setCurrentAnalysis}
+            />
+          </div>
+          
+        </div>
       </div>
     </div>
   );

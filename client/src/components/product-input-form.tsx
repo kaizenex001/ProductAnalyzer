@@ -247,39 +247,39 @@ export default function ProductInputForm({ onAnalysisComplete, productData }: Pr
 
   return (
     <Card className="h-fit">
-      <CardHeader className="border-b border-slate-200">
-        <CardTitle className="flex items-center">
-          <Edit3 className="text-primary mr-3" />
+      <CardHeader className="border-b border-slate-200 px-3 py-4 sm:px-6">
+        <CardTitle className="flex items-center text-base sm:text-lg">
+          <Edit3 className="text-primary mr-2 sm:mr-3 h-4 w-4 sm:h-5 sm:w-5" />
           Input Product Details
         </CardTitle>
-        <p className="text-slate-600 text-sm">
+        <p className="text-slate-600 text-xs sm:text-sm">
           Provide comprehensive product information for AI analysis
         </p>
       </CardHeader>
-      <CardContent className="p-6">
+      <CardContent className="p-3 sm:p-4 lg:p-6">
         <Form {...form}>
           {/* UPDATED: Removed onSubmit from the form tag */}
-          <form className="space-y-6" encType="multipart/form-data">
+          <form className="space-y-4 sm:space-y-6" encType="multipart/form-data">
             {/* Product Fundamentals */}
             <Collapsible
               open={openSections.fundamentals}
               onOpenChange={() => toggleSection('fundamentals')}
             >
               <div className="border border-slate-200 rounded-lg">
-                <CollapsibleTrigger className="w-full px-4 py-3 text-left bg-slate-50 hover:bg-slate-100 rounded-t-lg border-b border-slate-200 flex items-center justify-between">
-                  <span className="font-medium text-slate-900">Product Fundamentals</span>
+                <CollapsibleTrigger className="w-full px-3 sm:px-4 py-3 text-left bg-slate-50 hover:bg-slate-100 rounded-t-lg border-b border-slate-200 flex items-center justify-between">
+                  <span className="font-medium text-slate-900 text-sm sm:text-base">Product Fundamentals</span>
                   <ChevronDown className={cn(
-                    "text-slate-400 transition-transform",
+                    "text-slate-400 transition-transform h-4 w-4 flex-shrink-0",
                     openSections.fundamentals && "transform rotate-180"
                   )} />
                 </CollapsibleTrigger>
-                <CollapsibleContent className="p-4 space-y-4">
+                <CollapsibleContent className="p-3 sm:p-4 space-y-3 sm:space-y-4">
                   <FormField
                     control={form.control}
                     name="productImage"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Product Image</FormLabel>
+                        <FormLabel className="text-sm">Product Image</FormLabel>
                         <FormControl>
                           <FileUpload onUpload={(url: string, file: File) => {
                             field.onChange(url);
@@ -296,7 +296,7 @@ export default function ProductInputForm({ onAnalysisComplete, productData }: Pr
                     name="productName"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Product Name</FormLabel>
+                        <FormLabel className="text-sm">Product Name</FormLabel>
                         <FormControl>
                           <Input placeholder="Enter product name" {...field} />
                         </FormControl>

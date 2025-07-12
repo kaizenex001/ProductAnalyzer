@@ -536,8 +536,14 @@ STEP 4: STRATEGIC POLISH
 - Test emotional resonance and logical flow
 
 OUTPUT REQUIREMENTS:
-1. Provide the optimized content (ready to copy/paste)
-2. State your primary optimization focus in one clear sentence
+1. Provide the optimized content first (ready to copy/paste)
+2. Then state your primary optimization focus in one clear sentence
+
+FORMAT YOUR RESPONSE EXACTLY LIKE THIS:
+OPTIMIZED CONTENT:
+"[Your optimized content here]"
+
+OPTIMIZATION FOCUS: [Your focus statement here]
 
 OPTIMIZATION FOCUS OPTIONS:
 - "SEO Keyword Density and Search Visibility"
@@ -568,15 +574,59 @@ Be strategic, psychology-driven, and conversion-focused.
 
   const fullResponse = response.choices[0].message.content || selection;
   
-  // Extract optimization focus and optimized content
-  const focusMatch = fullResponse.match(/(?:I have optimized|Optimized for|Focus:|Primary optimization:)\s*([^.\n]+)/i);
+  // Extract optimization focus - look for explicit optimization focus statements
+  const focusMatch = fullResponse.match(/(?:optimization focus):\s*"?([^".\n]+)"?/i);
   const optimizationFocus = focusMatch ? focusMatch[1].trim() : "Content Enhancement and Engagement";
   
-  // Extract the actual optimized content (remove any explanatory text)
-  const contentMatch = fullResponse.match(/(?:OPTIMIZED CONTENT:|Here's the optimized content:)?\s*"([^"]+)"/i) || 
-                       fullResponse.match(/(?:OPTIMIZED CONTENT:|Here's the optimized content:)?\s*([^"]+)$/i);
+  // Extract the actual optimized content - look for content after "OPTIMIZED CONTENT:"
+  let optimizedContent = selection; // Default to original if no match found
   
-  const optimizedContent = contentMatch ? contentMatch[1].trim() : fullResponse;
+  // Try to extract content from the structured format
+  const structuredMatch = fullResponse.match(/OPTIMIZED CONTENT:\s*"([^"]+)"/i);
+  if (structuredMatch) {
+    optimizedContent = structuredMatch[1].trim();
+  } else {
+    // Fallback patterns for less structured responses
+    const patterns = [
+      /"([^"]+)"/g, // Find all quoted strings and take the longest one
+      /(?:optimized content|final version|improved version):\s*([^"]+?)(?:\n\n|\n\s*\n|$)/i,
+    ];
+    
+    for (const pattern of patterns) {
+      if (pattern.global) {
+        // For global pattern, find the longest match
+        let match;
+        const allMatches = [];
+        while ((match = pattern.exec(fullResponse)) !== null) {
+          allMatches.push(match[1]);
+        }
+        if (allMatches.length > 0) {
+          optimizedContent = allMatches
+            .sort((a, b) => b.length - a.length)[0] // Take the longest match
+            .trim();
+          break;
+        }
+      } else {
+        const matches = fullResponse.match(pattern);
+        if (matches) {
+          optimizedContent = matches[1].trim();
+          break;
+        }
+      }
+    }
+  }
+  
+  // If we still have the original content, use the full response but clean it up
+  if (optimizedContent === selection) {
+    // Remove any meta-text and focus on the actual content
+    const cleanResponse = fullResponse
+      .replace(/(?:optimization focus):\s*"?[^".\n]+"?/i, '')
+      .replace(/(?:optimized content|final version|improved version):/i, '')
+      .replace(/^[\s\n]+|[\s\n]+$/g, '') // Trim whitespace
+      .replace(/^"(.*)"$/g, '$1'); // Remove surrounding quotes if present
+    
+    optimizedContent = cleanResponse || selection;
+  }
 
   return {
     result: optimizedContent,

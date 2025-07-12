@@ -57,20 +57,21 @@ export default function Navigation({ className }: NavigationProps) {
         "border-b border-border sticky top-0 z-50",
         className
       )}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-14 sm:h-16">
             {/* Logo and Title */}
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2 sm:space-x-4 min-w-0">
               <Link href={ROUTES.HOME} className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
-                <BarChart3 className="text-primary h-6 w-6" />
-                <h1 className="text-xl font-semibold text-foreground">
-                  {APP_CONFIG.NAME}
+                <BarChart3 className="text-primary h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0" />
+                <h1 className="text-lg sm:text-xl font-semibold text-foreground truncate">
+                  <span className="hidden sm:inline">{APP_CONFIG.NAME}</span>
+                  <span className="sm:hidden">ProductAnalyzer</span>
                 </h1>
               </Link>
             </div>
 
             {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center space-x-1">
+            <div className="hidden lg:flex items-center space-x-1">
               {navItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = location === item.path;
@@ -104,43 +105,43 @@ export default function Navigation({ className }: NavigationProps) {
               })}
             </div>
 
-            {/* Mobile Navigation */}
-            <div className="md:hidden flex items-center space-x-2">
-              {navItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = location === item.path;
-                
-                return (
-                  <Tooltip key={item.path}>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant={isActive ? "default" : "ghost"}
-                        size="sm"
-                        asChild
-                        className="relative"
-                      >
-                        <Link href={item.path}>
-                          <Icon className="h-4 w-4" />
-                          {item.path === ROUTES.REPORTS && reports?.length && (
-                            <Badge 
-                              variant="destructive" 
-                              className="absolute -top-1 -right-1 h-4 w-4 p-0 text-xs flex items-center justify-center"
-                            >
-                              {reports.length > 99 ? '99+' : reports.length}
-                            </Badge>
-                          )}
-                        </Link>
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>{item.label}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                );
-              })}
+            {/* Mobile Navigation - Improved */}
+            <div className="lg:hidden flex items-center">
+              <div className="flex items-center space-x-1">
+                {navItems.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = location === item.path;
+                  
+                  return (
+                    <Tooltip key={item.path}>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant={isActive ? "default" : "ghost"}
+                          size="sm"
+                          asChild
+                          className="relative p-2 h-auto min-w-0"
+                        >
+                          <Link href={item.path}>
+                            <Icon className="h-4 w-4 flex-shrink-0" />
+                            {item.path === ROUTES.REPORTS && reports?.length && (
+                              <Badge 
+                                variant="destructive" 
+                                className="absolute -top-1 -right-1 h-4 w-4 p-0 text-xs flex items-center justify-center"
+                              >
+                                {reports.length > 99 ? '99+' : reports.length}
+                              </Badge>
+                            )}
+                          </Link>
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{item.label}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  );
+                })}
+              </div>
             </div>
-
-
           </div>
         </div>
       </nav>

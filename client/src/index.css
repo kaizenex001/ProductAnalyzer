@@ -1,3 +1,27 @@
+@layer utilities {
+  .border-border { border-color: var(--border); }
+  .bg-background { background-color: var(--background); }
+  .bg-popover { background-color: var(--popover); }
+  .bg-card { background-color: var(--card); }
+  .bg-muted { background-color: var(--muted); }
+  .bg-primary { background-color: var(--primary); }
+  .bg-secondary { background-color: var(--secondary); }
+  .bg-accent { background-color: var(--accent); }
+  .bg-destructive { background-color: var(--destructive); }
+  .text-foreground { color: var(--foreground); }
+  .text-popover-foreground { color: var(--popover-foreground); }
+  .text-card-foreground { color: var(--card-foreground); }
+  .text-muted-foreground { color: var(--muted-foreground); }
+  .text-primary-foreground { color: var(--primary-foreground); }
+  .text-secondary-foreground { color: var(--secondary-foreground); }
+  .text-accent-foreground { color: var(--accent-foreground); }
+  .text-destructive-foreground { color: var(--destructive-foreground); }
+}
+@layer utilities {
+  .border-border {
+    border-color: var(--border);
+  }
+}
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -32,5 +56,78 @@
 
   body {
     @apply font-sans antialiased bg-background text-foreground;
+  }
+}
+
+@layer components {
+  /* Mobile-first responsive improvements */
+  .mobile-safe-area {
+    @apply px-safe-area-inset-x;
+  }
+
+  .mobile-scroll-container {
+    @apply overscroll-contain;
+  }
+
+  /* Improve touch targets on mobile */
+  .touch-target {
+    @apply min-h-[44px] min-w-[44px];
+  }
+
+  /* Prevent text from being too small on mobile */
+  .mobile-text-min {
+    font-size: max(16px, 1rem);
+  }
+
+  /* Improve form inputs on mobile */
+  .mobile-input {
+    @apply text-base; /* Prevents zoom on iOS */
+  }
+
+  /* Handle very small screens (320px and up) */
+  @media (max-width: 359px) {
+    .ultra-small-screen {
+      @apply text-sm;
+    }
+    
+    .ultra-small-screen .card-padding {
+      @apply p-2;
+    }
+    
+    .ultra-small-screen .button-text {
+      @apply text-xs;
+    }
+  }
+
+  /* Improve button spacing on mobile */
+  .mobile-button-stack {
+    @apply flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2;
+  }
+
+  /* Better card layouts for mobile */
+  .mobile-card {
+    @apply rounded-lg sm:rounded-xl;
+  }
+
+  .mobile-card-header {
+    @apply px-3 py-4 sm:px-6 sm:py-4;
+  }
+
+  .mobile-card-content {
+    @apply px-3 py-3 sm:px-6 sm:py-4;
+  }
+
+  /* Improve modal behavior on mobile */
+  .mobile-modal {
+    @apply max-h-[90vh] overflow-y-auto;
+  }
+
+  /* Better form layouts */
+  .mobile-form-grid {
+    @apply grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4;
+  }
+
+  .mobile-form-row {
+    @apply flex flex-col sm:flex-row gap-3 sm:gap-4;
   }
 }

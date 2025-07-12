@@ -221,33 +221,37 @@ export default function ContentIdeation() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-900 mb-2">Content Ideation</h1>
-        <p className="text-slate-600">Generate AI-powered content ideas tailored to your products</p>
-      </div>
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
+        {/* Header */}
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">Content Ideation</h1>
+          <p className="text-slate-600 text-sm sm:text-base">Generate AI-powered content ideas tailored to your products</p>
+        </div>
 
-      {/* Report Selection */}
-      <Card className="mb-8">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-purple-600" />
-            Select Product Report
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex gap-4 items-end">
-            <div className="flex-1">
-              <Select value={selectedReport} onValueChange={setSelectedReport}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Choose a saved product report..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {reports.map((report) => (
-                    <SelectItem key={report.id} value={report.id.toString()}>
-                      {report.productName} - {report.productCategory}
-                    </SelectItem>
+        {/* Report Selection */}
+        <Card className="mb-6 sm:mb-8">
+          <CardHeader className="px-3 py-4 sm:px-6">
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
+              Select Product Report
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="px-3 sm:px-6 pb-4 sm:pb-6">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 sm:items-end">
+              <div className="flex-1">
+                <Select value={selectedReport} onValueChange={setSelectedReport}>
+                  <SelectTrigger className="h-9 sm:h-10">
+                    <SelectValue placeholder="Choose a saved product report..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {reports.map((report) => (
+                      <SelectItem key={report.id} value={report.id.toString()}>
+                        <div className="flex flex-col sm:flex-row sm:gap-2">
+                          <span className="font-medium">{report.productName}</span>
+                          <span className="text-xs sm:text-sm text-slate-500">- {report.productCategory}</span>
+                        </div>
+                      </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -602,6 +606,7 @@ export default function ContentIdeation() {
           </CardContent>
         </Card>
       )}
+      </div>
     </div>
   );
 }

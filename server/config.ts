@@ -9,10 +9,17 @@ export const SERVER_CONFIG = {
   PORT: process.env.PORT || 3000,
   NODE_ENV: process.env.NODE_ENV || 'development',
   API_BASE_PATH: '/api',
-  CLIENT_BUILD_PATH: './client/dist',
+  CLIENT_BUILD_PATH: './server/public',
   UPLOAD_LIMIT: '10mb',
   MAX_FILE_SIZE: 10 * 1024 * 1024, // 10MB
-  CORS_ORIGINS: process.env.CORS_ORIGINS?.split(',') || ['http://localhost:5173'],
+  CORS_ORIGINS: process.env.CORS_ORIGINS?.split(',') || [
+    'http://localhost:5173',
+    'http://localhost:5001',
+    'https://*.vercel.app',
+    'https://your-app-name.vercel.app'
+  ],
+  IS_PRODUCTION: process.env.NODE_ENV === 'production',
+  IS_VERCEL: process.env.VERCEL === '1',
 } as const;
 
 // Database configuration

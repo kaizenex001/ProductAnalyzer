@@ -107,37 +107,38 @@ export default function Chatbot() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-6 max-w-5xl min-h-screen">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-900 mb-3 flex items-center gap-3">
-          <MessageCircle className="w-8 h-8 text-blue-600" />
-          AI Assistant
-        </h1>
-        <p className="text-slate-600 text-lg">
-          Ask questions about your products, reports, and business insights. I have access to all your analysis data.
-        </p>
-      </div>
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-6 max-w-5xl">
+        {/* Header */}
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2 sm:mb-3 flex items-center gap-2 sm:gap-3">
+            <MessageCircle className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600 flex-shrink-0" />
+            <span className="truncate">AI Assistant</span>
+          </h1>
+          <p className="text-slate-600 text-sm sm:text-base lg:text-lg">
+            Ask questions about your products, reports, and business insights. I have access to all your analysis data.
+          </p>
+        </div>
 
-      {/* Chat Interface */}
-      <Card className="h-[calc(100vh-200px)] flex flex-col shadow-lg">
-        <CardHeader className="border-b border-slate-200 pb-4 flex-shrink-0">
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <Bot className="w-5 h-5 text-blue-600" />
-            Chat with AI Assistant
-          </CardTitle>
-          <div className="flex gap-2 text-sm text-slate-600">
-            <Badge variant="outline">{Array.isArray(reports) ? reports.length : 0} reports available</Badge>
-            <Badge variant="outline">Real-time insights</Badge>
-          </div>
-        </CardHeader>
+        {/* Chat Interface */}
+        <Card className="h-[calc(100vh-140px)] sm:h-[calc(100vh-200px)] flex flex-col shadow-lg">
+          <CardHeader className="border-b border-slate-200 pb-3 sm:pb-4 flex-shrink-0 px-3 sm:px-6 py-3 sm:py-4">
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <Bot className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
+              Chat with AI Assistant
+            </CardTitle>
+            <div className="flex flex-col sm:flex-row gap-2 text-xs sm:text-sm text-slate-600">
+              <Badge variant="outline" className="text-xs">{Array.isArray(reports) ? reports.length : 0} reports available</Badge>
+              <Badge variant="outline" className="text-xs">Real-time insights</Badge>
+            </div>
+          </CardHeader>
 
-        <CardContent className="flex-1 flex flex-col p-0 overflow-hidden">
-          {/* Messages Container */}
-          <div className="flex-1 overflow-y-auto">
-            <div className="p-4 space-y-4">
-              {messages.map((message) => (
-                <div
+          <CardContent className="flex-1 flex flex-col p-0 overflow-hidden">
+            {/* Messages Container */}
+            <div className="flex-1 overflow-y-auto">
+              <div className="p-3 sm:p-4 space-y-3 sm:space-y-4">
+                {messages.map((message) => (
+                  <div
                   key={message.id}
                   className={`flex gap-3 ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
@@ -248,6 +249,7 @@ export default function Chatbot() {
             </Button>
           ))}
         </div>
+      </div>
       </div>
     </div>
   );

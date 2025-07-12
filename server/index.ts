@@ -34,81 +34,103 @@ try {
   process.exit(1);
 }
 
-const app = express();
+// Create and configure Express app
+export async function createServer() {
+  const app = express();
 
-// Trust proxy for accurate IP addresses
-app.set("trust proxy", 1);
+  // Trust proxy for accurate IP addresses
+  app.set("trust proxy", 1);
 
-// Security middleware
-app.use(helmet(SECURITY_CONFIG.HELMET_CONFIG));
+  // Security middleware
+  app.use(helmet(SECURITY_CONFIG.HELMET_CONFIG));
 
-// CORS configuration
-const corsOptions = getCorsOptions(['http://localhost:5173', 'http://localhost:3000', 'http://127.0.0.1:5001']);
-app.use(cors(corsOptions));
+  // CORS configuration
+  const corsOptions = getCorsOptions(['http://localhost:5173', 'http://localhost:3000', 'http://127.0.0.1:5001']);
+  app.use(cors(corsOptions));
 
-// Rate limiting for API routes
-const rateLimiter = rateLimit({
-  windowMs: RATE_LIMIT_CONFIG.WINDOW_MS,
-  max: RATE_LIMIT_CONFIG.MAX_REQUESTS,
-  message: createRateLimitMessage(
-    RATE_LIMIT_CONFIG.WINDOW_MS,
-    RATE_LIMIT_CONFIG.MAX_REQUESTS
-  ),
-  standardHeaders: true,
-  legacyHeaders: false,
-  skipSuccessfulRequests: RATE_LIMIT_CONFIG.SKIP_SUCCESSFUL_REQUESTS,
-  skipFailedRequests: RATE_LIMIT_CONFIG.SKIP_FAILED_REQUESTS,
-});
-
-// Apply rate limiting to API routes only
-app.use('/api', rateLimiter);
-
-// Body parsing middleware
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ extended: false, limit: '50mb' }));
-
-// Compression middleware
-app.use(compression());
-
-// Input sanitization
-app.use(sanitizeInput);
-
-// Response formatting
-app.use(formatResponse);
-
-// Enhanced request logging
-app.use((req, res, next) => {
-  const start = Date.now();
-  const path = req.path;
-  let capturedJsonResponse: Record<string, any> | undefined = undefined;
-
-  const originalResJson = res.json;
-  res.json = function (bodyJson, ...args) {
-    capturedJsonResponse = bodyJson;
-    return originalResJson.apply(res, [bodyJson, ...args]);
-  };
-
-  res.on("finish", () => {
-    const duration = Date.now() - start;
-    if (path.startsWith("/api")) {
-      let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
-      if (capturedJsonResponse) {
-        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
-      }
-
-      if (logLine.length > 80) {
-        logLine = logLine.slice(0, 79) + "…";
-      }
-
-      log(logLine);
-    }
+  // Rate limiting for API routes
+  const rateLimiter = rateLimit({
+    windowMs: RATE_LIMIT_CONFIG.WINDOW_MS,
+    max: RATE_LIMIT_CONFIG.MAX_REQUESTS,
+    message: createRateLimitMessage(
+      RATE_LIMIT_CONFIG.WINDOW_MS,
+      RATE_LIMIT_CONFIG.MAX_REQUESTS
+    ),
+    standardHeaders: true,
+    legacyHeaders: false,
+    skipSuccessfulRequests: RATE_LIMIT_CONFIG.SKIP_SUCCESSFUL_REQUESTS,
+    skipFailedRequests: RATE_LIMIT_CONFIG.SKIP_FAILED_REQUESTS,
   });
 
-  next();
-});
+  // Apply rate limiting to API routes only
+  app.use('/api', rateLimiter);
 
-// Health check endpoint
-app.get('/api' + API_ENDPOINTS.HEALTH, healthCheck);
+  // Body parsing middleware
+  app.use(express.json({ limit: '50mb' }));
+  app.use(express.urlencoded({ extended: false, limit: '50mb' }));
+
+  // Compression middleware
+  app.use(compression());
+
+  // Input sanitization
+  app.use(sanitizeInput);
+
+  // Response formatting
+  app.use(formatResponse);
+
+  // Enhanced request logging
+  app.use((req, res, next) => {
+    const start = Date.now();
+    const path = req.path;
+    let capturedJsonResponse: Record<string, any> | undefined = undefined;
+
+    const originalResJson = res.json;
+    res.json = function (bodyJson, ...args) {
+      capturedJsonResponse = bodyJson;
+      return originalResJson.apply(res, [bodyJson, ...args]);
+    };
+
+    res.on("finish", () => {
+      const duration = Date.now() - start;
+      if (path.startsWith("/api")) {
+        let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
+        if (capturedJsonResponse) {
+          logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
+        }
+
+        if (logLine.length > 80) {
+          logLine = logLine.slice(0, 79) + "…";
+        }
+
+        log(logLine);
+      }
+    });
+
+    next();
+  });
+
+  // Health check endpoint
+  app.get('/api' + API_ENDPOINTS.HEALTH, healthCheck);
+
+  // Register API routes
+  await registerRoutes(app);
+  console.log("✅ API routes registered successfully");
+
+  // 404 handler for API routes
+  app.use('/api', notFoundHandler);
+
+  // Enhanced global error handler
+  app.use(errorHandler);
+
+  // Setup Vite for development or serve static files for production
+  if (app.get("env") === "development") {
+    await setupVite(app);
+  } else {
+    serveStatic(app);
+  }
+
+  return app;
+}
 
 // Graceful shutdown handling
 process.on('SIGTERM', () => {
@@ -133,23 +155,16 @@ process.on('uncaughtException', (error) => {
   process.exit(1);
 });
 
+// Start server if not in Vercel environment
 (async () => {
   try {
-    await registerRoutes(app);
-    console.log("✅ API routes registered successfully");
-
-    // 404 handler for API routes
-    app.use('/api', notFoundHandler);
-
-    // Enhanced global error handler
-    app.use(errorHandler);
-
-    // Setup Vite for development or serve static files for production
-    if (app.get("env") === "development") {
-      await setupVite(app);
-    } else {
-      serveStatic(app);
+    // Skip server startup on Vercel (handled by serverless functions)
+    if (SERVER_CONFIG.IS_VERCEL) {
+      console.log('🔄 Running on Vercel - serverless mode');
+      return;
     }
+
+    const app = await createServer();
 
     // Start server
     const port = 5001;

@@ -12,15 +12,17 @@ import Chatbot from "@/pages/chatbot";
 
 function Router() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background overflow-x-hidden">
       <Navigation />
-      <Switch>
-        <Route path="/" component={Analyzer} />
-        <Route path="/reports" component={Reports} />
-        <Route path="/content-ideation" component={ContentIdeation} />
-        <Route path="/chat" component={Chatbot} />
-        <Route component={NotFound} />
-      </Switch>
+      <main className="flex-1">
+        <Switch>
+          <Route path="/" component={Analyzer} />
+          <Route path="/reports" component={Reports} />
+          <Route path="/content-ideation" component={ContentIdeation} />
+          <Route path="/chat" component={Chatbot} />
+          <Route component={NotFound} />
+        </Switch>
+      </main>
     </div>
   );
 }
