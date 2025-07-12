@@ -10,20 +10,41 @@ import type { Report } from "@shared/schema";
 
 interface ContentIdeas {
   hashtags: {
-    trending: string[];
-    niche: string[];
-    branded: string[];
+    awareness: string[];
+    communityBuilding: string[];
+    conversionFocused: string[];
   };
   captions: {
-    engaging: string;
-    informative: string;
-    promotional: string;
+    engaging: {
+      content: string;
+      abTestHooks: string[];
+    };
+    informative: {
+      content: string;
+      abTestHooks: string[];
+    };
+    promotional: {
+      content: string;
+      abTestHooks: string[];
+    };
   };
   storylines: {
-    problemSolution: string;
-    behindTheScenes: string;
-    customerStory: string;
-    educational: string;
+    problemSolution: {
+      content: string;
+      contentPillar: string;
+    };
+    behindTheScenes: {
+      content: string;
+      contentPillar: string;
+    };
+    customerStory: {
+      content: string;
+      contentPillar: string;
+    };
+    educational: {
+      content: string;
+      contentPillar: string;
+    };
   };
   hooks: {
     question: string;
@@ -266,29 +287,29 @@ export default function ContentIdeation() {
               <div className="space-y-4">
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-medium text-slate-700">Trending & Viral</h4>
+                    <h4 className="font-medium text-slate-700">Awareness & Discovery</h4>
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => copyToClipboard(contentIdeas.hashtags.trending.join(' '), 'trending-hashtags')}
+                      onClick={() => copyToClipboard(contentIdeas.hashtags.awareness?.join(' ') || '', 'awareness-hashtags')}
                     >
-                      {copiedItems.includes('trending-hashtags') ? 
+                      {copiedItems.includes('awareness-hashtags') ? 
                         <Check className="w-4 h-4 text-green-600" /> : 
                         <Copy className="w-4 h-4" />
                       }
                     </Button>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    {contentIdeas.hashtags.trending.map((tag, index) => (
+                    {(contentIdeas.hashtags.awareness || []).map((tag, index) => (
                       <Badge 
                         key={index} 
                         variant="secondary" 
                         className={`cursor-pointer transition-colors ${
-                          selectedItems.trending === tag 
+                          selectedItems.awareness === tag 
                             ? 'bg-purple-100 text-purple-800 border-purple-300' 
                             : 'hover:bg-slate-200'
                         }`}
-                        onClick={() => selectItem('trending', tag)}
+                        onClick={() => selectItem('awareness', tag)}
                       >
                         {tag}
                       </Badge>
@@ -298,29 +319,29 @@ export default function ContentIdeation() {
 
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-medium text-slate-700">Niche & Targeted</h4>
+                    <h4 className="font-medium text-slate-700">Community Building</h4>
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => copyToClipboard(contentIdeas.hashtags.niche.join(' '), 'niche-hashtags')}
+                      onClick={() => copyToClipboard(contentIdeas.hashtags.communityBuilding?.join(' ') || '', 'community-hashtags')}
                     >
-                      {copiedItems.includes('niche-hashtags') ? 
+                      {copiedItems.includes('community-hashtags') ? 
                         <Check className="w-4 h-4 text-green-600" /> : 
                         <Copy className="w-4 h-4" />
                       }
                     </Button>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    {contentIdeas.hashtags.niche.map((tag, index) => (
+                    {(contentIdeas.hashtags.communityBuilding || []).map((tag: string, index: number) => (
                       <Badge 
                         key={index} 
                         variant="outline" 
                         className={`cursor-pointer transition-colors ${
-                          selectedItems.niche === tag 
+                          selectedItems.community === tag 
                             ? 'bg-blue-100 text-blue-800 border-blue-300' 
                             : 'hover:bg-slate-100'
                         }`}
-                        onClick={() => selectItem('niche', tag)}
+                        onClick={() => selectItem('community', tag)}
                       >
                         {tag}
                       </Badge>
@@ -330,28 +351,28 @@ export default function ContentIdeation() {
 
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-medium text-slate-700">Branded & Product</h4>
+                    <h4 className="font-medium text-slate-700">Conversion Focused</h4>
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => copyToClipboard(contentIdeas.hashtags.branded.join(' '), 'branded-hashtags')}
+                      onClick={() => copyToClipboard(contentIdeas.hashtags.conversionFocused?.join(' ') || '', 'conversion-hashtags')}
                     >
-                      {copiedItems.includes('branded-hashtags') ? 
+                      {copiedItems.includes('conversion-hashtags') ? 
                         <Check className="w-4 h-4 text-green-600" /> : 
                         <Copy className="w-4 h-4" />
                       }
                     </Button>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    {contentIdeas.hashtags.branded.map((tag, index) => (
+                    {(contentIdeas.hashtags.conversionFocused || []).map((tag: string, index: number) => (
                       <Badge 
                         key={index} 
                         className={`cursor-pointer transition-colors ${
-                          selectedItems.branded === tag 
+                          selectedItems.conversion === tag 
                             ? 'bg-green-600 text-white' 
                             : 'bg-green-100 text-green-800 hover:bg-green-200'
                         }`}
-                        onClick={() => selectItem('branded', tag)}
+                        onClick={() => selectItem('conversion', tag)}
                       >
                         {tag}
                       </Badge>
@@ -369,7 +390,7 @@ export default function ContentIdeation() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {Object.entries(contentIdeas.captions).map(([type, caption]) => (
+                {Object.entries(contentIdeas.captions).map(([type, captionData]) => (
                   <div key={type} className="border border-slate-200 rounded-lg p-4">
                     <div className="flex items-center justify-between mb-2">
                       <h4 className="font-medium text-slate-900 capitalize">{type} Style</h4>
@@ -377,17 +398,17 @@ export default function ContentIdeation() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => optimizeSelection('captions', caption)}
-                          disabled={isItemOptimizing('captions', caption)}
+                          onClick={() => optimizeSelection('captions', captionData.content)}
+                          disabled={isItemOptimizing('captions', captionData.content)}
                           className="text-purple-600 border-purple-200 hover:bg-purple-50"
                         >
                           <Sparkles className="w-3 h-3 mr-1" />
-                          {isItemOptimizing('captions', caption) ? 'Optimizing...' : 'Optimize'}
+                          {isItemOptimizing('captions', captionData.content) ? 'Optimizing...' : 'Optimize'}
                         </Button>
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => copyToClipboard(caption, `caption-${type}`)}
+                          onClick={() => copyToClipboard(captionData.content, `caption-${type}`)}
                         >
                           {copiedItems.includes(`caption-${type}`) ? 
                             <Check className="w-4 h-4 text-green-600" /> : 
@@ -396,8 +417,31 @@ export default function ContentIdeation() {
                         </Button>
                       </div>
                     </div>
-                    <p className="text-slate-700 text-sm leading-relaxed">{caption}</p>
-                    {renderOptimizedContent('captions', caption)}
+                    <p className="text-slate-700 text-sm leading-relaxed">{captionData.content}</p>
+                    {captionData.abTestHooks && captionData.abTestHooks.length > 0 && (
+                      <div className="mt-3 pt-3 border-t border-slate-200">
+                        <h5 className="font-medium text-slate-900 text-xs mb-2">A/B Test Hooks:</h5>
+                        <div className="space-y-1">
+                          {captionData.abTestHooks.map((hook: string, index: number) => (
+                            <div key={index} className="flex items-center justify-between bg-slate-50 p-2 rounded text-xs">
+                              <span className="text-slate-700">{hook}</span>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => copyToClipboard(hook, `hook-${type}-${index}`)}
+                                className="h-6 w-6 p-0"
+                              >
+                                {copiedItems.includes(`hook-${type}-${index}`) ? 
+                                  <Check className="w-3 h-3 text-green-600" /> : 
+                                  <Copy className="w-3 h-3" />
+                                }
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {renderOptimizedContent('captions', captionData.content)}
                   </div>
                 ))}
               </div>
@@ -411,7 +455,7 @@ export default function ContentIdeation() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {Object.entries(contentIdeas.storylines).map(([type, storyline]) => (
+                {Object.entries(contentIdeas.storylines).map(([type, storylineData]) => (
                   <div key={type} className="border border-slate-200 rounded-lg p-4">
                     <div className="flex items-center justify-between mb-2">
                       <h4 className="font-medium text-slate-900">
@@ -421,17 +465,17 @@ export default function ContentIdeation() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => optimizeSelection('storylines', storyline)}
-                          disabled={isItemOptimizing('storylines', storyline)}
+                          onClick={() => optimizeSelection('storylines', storylineData.content)}
+                          disabled={isItemOptimizing('storylines', storylineData.content)}
                           className="text-purple-600 border-purple-200 hover:bg-purple-50"
                         >
                           <Sparkles className="w-3 h-3 mr-1" />
-                          {isItemOptimizing('storylines', storyline) ? 'Optimizing...' : 'Optimize'}
+                          {isItemOptimizing('storylines', storylineData.content) ? 'Optimizing...' : 'Optimize'}
                         </Button>
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => copyToClipboard(storyline, `storyline-${type}`)}
+                          onClick={() => copyToClipboard(storylineData.content, `storyline-${type}`)}
                         >
                           {copiedItems.includes(`storyline-${type}`) ? 
                             <Check className="w-4 h-4 text-green-600" /> : 
@@ -440,9 +484,15 @@ export default function ContentIdeation() {
                         </Button>
                       </div>
                     </div>
-                    <p className="text-slate-700 text-sm leading-relaxed">{storyline}</p>
-                    {renderOptimizedContent('storylines', storyline)}
-                    {renderOptimizedContent('storylines', storyline)}
+                    <p className="text-slate-700 text-sm leading-relaxed">{storylineData.content}</p>
+                    {storylineData.contentPillar && (
+                      <div className="mt-2">
+                        <Badge variant="outline" className="text-xs">
+                          Content Pillar: {storylineData.contentPillar}
+                        </Badge>
+                      </div>
+                    )}
+                    {renderOptimizedContent('storylines', storylineData.content)}
                   </div>
                 ))}
               </div>
